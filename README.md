@@ -46,6 +46,11 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 - Titipan tiap outlet tampil sebagai **tabel** (Tanggal, Produk, Jml terjual, Subtotal, Aksi ubah/hapus).
 - Dikelompokkan **per bulan**, lalu per status: *Belum lunas* (terbuka) dan *Lunas* (terlipat). Tekan judul kelompok untuk membuka/menutup.
 
+## Daftar produk & harga (v1.9.4)
+- Lainnya > Daftar produk & harga berupa baris isian (Nama, Harga, tombol hapus), bukan lagi teks `Nama = harga`. Ada *Tambah produk*, *Urutkan A-Z*, dan *Simpan produk*.
+- Validasi saat simpan: nama wajib, harga bilangan bulat 1 sampai 10.000.000, nama tidak boleh kembar (huruf besar/kecil dianggap sama), maksimal 60 produk. Baris yang salah ditandai merah. Baris kosong diabaikan.
+- Mengganti nama produk tidak mengubah titipan lama.
+
 ## Menu Bayar
 - Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
 - **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.

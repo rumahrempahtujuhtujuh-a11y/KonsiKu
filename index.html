@@ -172,6 +172,9 @@ nav:empty{display:none}
 .kh{font-weight:700;color:var(--mu);font-size:.68rem;text-transform:uppercase}.kh span:nth-child(n+3){text-align:right}
 .grid>*{min-width:0}.c .v,.hero .hv{overflow-wrap:anywhere}
 
+.pkr{display:grid;grid-template-columns:1fr 124px auto;gap:8px;align-items:center;margin-top:8px}.pkr input{margin:0;min-width:0}
+.pkr .pp{display:flex;align-items:center;gap:6px;margin:0;padding:0 0 0 12px;background:var(--inp);border-radius:12px;text-transform:none;letter-spacing:0}.pkr .pp span{color:var(--mu);font-weight:700;font-size:.85rem}.pkr .pp input{background:transparent;padding-left:0;width:100%}
+.pkr .bad{outline:2px solid #dc2626;border-radius:12px}.pkr .x{margin:0}
 .om{margin-top:14px}.omh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 2px;border-bottom:2px solid var(--bd)}.omh b{font-size:.98rem}
 .og{margin-top:8px}.og>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 2px}.og>summary::-webkit-details-marker{display:none}.og>summary::before{content:"\25B8";color:var(--mu);font-size:.8rem;transition:transform .15s}.og[open]>summary::before{transform:rotate(90deg)}.og>summary .gs{margin-left:auto;font-weight:800;font-size:.85rem}
 .og .tb td .x{margin-left:3px;width:30px;height:30px}.og .tb th.n:last-child,.og .tb td.n:last-child{white-space:nowrap}
@@ -350,7 +353,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='1.9.3',APP_D='23 Nov 2026';
+const APP_V='1.9.4',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -487,7 +490,7 @@ function rep(){
   <div class="sec">Hasil (${PLB[per]})</div><div class="c">${tb([['Keterangan'],['Jumlah','n']],`<tr><td>Pembayaran masuk</td><td class="n gr">${rp(IN)}</td></tr><tr><td>Total biaya</td><td class="n rd">- ${rp(OUT)}</td></tr>`,`<tr><td>Hasil bersih</td><td class="n">${NET<0?'-':''}${rp(Math.abs(NET))}</td></tr>`)}<div class="res ${NET>=0?'ok':'no'}"><span>${NET>=0?'Untung':'Rugi'}</span><span>Rp ${rp(Math.abs(NET))}</span></div></div>`}
 function more(){return `<h1>Lainnya</h1><p class="sub">Profil usaha, cadangan, dan data</p>
 ${LS.g('rr77lost')?`<div class="c" style="margin-bottom:12px"><b>Data yang tertimpa</b><p class="m">Perubahan dari perangkat ini tertimpa data yang lebih baru. Salinannya masih tersimpan.</p><button class="btn s" data-a="copylost">Salin</button> <button class="btn s" data-a="droplost">Buang</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Penyimpanan</b><p class="m">Data tersimpan aman di akun Anda dan disalin di perangkat ini. Status: ${esc(stat||'-')}</p><button class="btn s" data-a="logout">${ic('logout')}Keluar</button></div><div class="c" style="margin-bottom:12px"><b>Profil usaha</b><label>Nama usaha</label><input id="nm" value="${esc(S.nama||'KonsiKu')}" maxlength="40"><label>Nama pemilik / pengelola</label><input id="ow" value="${esc(S.owner||'')}" maxlength="40"><label>No. WhatsApp usaha</label><input id="wa2" inputmode="tel" value="${esc(S.wa||'')}" maxlength="20" placeholder="08xx"><label>Kota</label><input id="kt" value="${esc(S.kota||'')}" maxlength="40"><label>Rekening / cara bayar (ikut di teks tagihan)</label><input id="bk" value="${esc(S.bank||'')}" maxlength="80" placeholder="mis. BSI 7123… a.n. …"><button class="btn p s" data-a="savenm" style="margin-top:10px">Simpan profil</button><label style="margin-top:18px">Logo</label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="logo has" style="width:64px;height:64px"><img src="${S.logo||DEF_LOGO}" alt="Logo"></div><div><label class="btn s" for="lg" style="margin:0;text-transform:none;letter-spacing:0">${S.logo?'Ganti logo':'Pilih logo'}</label><input type="file" id="lg" accept="image/*" style="display:none">${S.logo?`<button class="btn s" data-a="rmlogo" style="margin-left:8px">${ic('trash')}Hapus</button>`:''}</div></div><p class="m" style="margin:10px 0 0">Logo ini dipakai di semua tampilan: header, layar PIN, ikon tab browser, dan ikon layar utama HP (bila aplikasi dipasang ulang). Hapus untuk kembali ke logo KonsiKu.</p></div>
-${S.demo?`<div class="c" style="margin-bottom:12px"><b>Data contoh aktif</b><p class="m">Yang tampil sekarang adalah data fiktif untuk mencoba aplikasi.</p><button class="btn s" data-a="rmdemo">${ic('trash')}Hapus data contoh</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Daftar produk &amp; harga</b><p class="m">Satu produk per baris, format: Nama = harga. Terisi otomatis di form titipan.</p><textarea id="pk" style="height:110px;font:inherit" placeholder="Jahe Merah Bubuk = 15000">${esc(pkText(S.produk))}</textarea><button class="btn p s" data-a="savepk" style="margin-top:10px">Simpan produk</button></div>
+${S.demo?`<div class="c" style="margin-bottom:12px"><b>Data contoh aktif</b><p class="m">Yang tampil sekarang adalah data fiktif untuk mencoba aplikasi.</p><button class="btn s" data-a="rmdemo">${ic('trash')}Hapus data contoh</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Daftar produk &amp; harga</b><p class="m">Nama dan harga satuan akan terisi otomatis saat mencatat titipan. Perubahan baru berlaku setelah menekan <b>Simpan produk</b>.</p><div id="pkl">${pkRows()}</div><div class="d" id="pke" style="color:#dc2626;margin-top:8px"></div><div class="acts" style="margin:12px 0 0"><button class="btn s" data-a="pkadd">${ic('plus')}Tambah produk</button><button class="btn s" data-a="pksort">Urutkan A-Z</button></div><button class="btn p" data-a="savepk" style="margin-top:12px;width:100%;justify-content:center">Simpan produk</button></div>
 <div class="c"><b>Cadangkan data</b><p class="m">Salin data ke clipboard, lalu simpan di WhatsApp pribadi atau catatan.${S.backupAt?' Terakhir: '+new Date(S.backupAt).toLocaleDateString('id-ID'):''}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn p s" data-a="backup">${ic('copy')}Salin cadangan</button><button class="btn s" data-a="savefile">${ic('doc')}Simpan ke file</button></div><p class="m" style="margin:8px 0 0">"Simpan ke file" mengunduh berkas .json ke perangkat ini.</p></div>
 <div class="c" style="margin-top:12px"><b>Pulihkan data</b><p class="m">Pilih berkas cadangan (.json), atau tempel teks cadangan di bawah. Seluruh data akun ini akan ditimpa.</p><label class="btn s" for="rsf" style="margin:0 0 10px">${ic('login')}Pilih file cadangan</label><input type="file" id="rsf" accept=".json,.txt,application/json,text/plain" hidden><textarea id="rs" style="height:100px" placeholder="Tempel di sini"></textarea><button class="btn s" data-a="restore" style="margin-top:10px">Pulihkan</button></div>
 <div class="c" style="margin-top:12px"><b>Ganti PIN</b><p class="m">PIN dipakai untuk masuk. Data Anda tetap sama setelah PIN diganti.</p><label>PIN lama</label><input type="password" id="cp0" autocomplete="current-password" autocapitalize="none" maxlength="32"><label>PIN baru <span class="m">(minimal 6 karakter, tanpa spasi)</span></label><input type="password" id="cp1" autocomplete="new-password" autocapitalize="none" maxlength="32"><label>Ulangi PIN baru</label><input type="password" id="cp2" autocomplete="new-password" autocapitalize="none" maxlength="32"><div class="er" id="cpe" style="color:#dc2626;font-size:.84rem;font-weight:600;margin-top:8px"></div><button class="btn p s" data-a="chpin" style="margin-top:6px">Ganti PIN</button></div><div class="c" style="margin-top:12px"><b>Hapus semua data</b><p class="m">Tidak bisa dibatalkan.</p><button class="btn s" data-a="reset">${ic('trash')}Hapus semua</button></div><p class="ver">KonsiKu · versi ${APP_V} (${APP_D})</p>${msg?`<p><b>${msg}</b></p>`:''}`}
@@ -686,6 +689,26 @@ async function cp(t){try{await navigator.clipboard.writeText(t);return 1}catch(e
 let OB=null;
 const needOb=()=>!!S&&!S.setup&&blank(S);
 const payInfo=()=>S&&S.bank?'\nPembayaran ke : '+S.bank+'\n':'';
+// Editor daftar produk (draft di PKD, disimpan saat tekan Simpan produk)
+let PKD=null;
+function pkRows(){
+  if(!PKD){PKD=(S.produk||[]).map(p=>({n:p.nama,h:p.harga||''}));if(!PKD.length)PKD.push({n:'',h:''})}
+  return PKD.map((r,i)=>`<div class="pkr" data-r="${i}"><input class="pn" maxlength="40" value="${esc(r.n)}" placeholder="Nama produk" aria-label="Nama produk ${i+1}" autocomplete="off"><label class="pp"><span>Rp</span><input class="ph" type="number" inputmode="numeric" min="1" value="${esc(r.h)}" placeholder="Harga" aria-label="Harga produk ${i+1}"></label><button class="x" data-a="pkdel" data-r="${i}" aria-label="Hapus produk ${i+1}">${ic('trash')}</button></div>`).join('')+(PKD.length>=60?'<p class="m">Maksimal 60 produk.</p>':'');
+}
+function pkDraw(foc){const e=$('#pkl');if(!e)return;e.innerHTML=pkRows();const x=$('#pke');if(x)x.textContent='';if(foc!=null){const l=e.querySelectorAll('.pn');if(l[foc])l[foc].focus()}}
+function pkSave(){
+  const er=(t,i,c)=>{$('#pke').textContent=t;const r=document.querySelector(`.pkr[data-r="${i}"] .${c}`);if(r){r.classList.add('bad');r.focus()}};
+  document.querySelectorAll('.pkr .bad').forEach(x=>x.classList.remove('bad'));
+  const out=[],seen=new Map();
+  for(let i=0;i<PKD.length;i++){const n=String(PKD[i].n).trim().replace(/\s+/g,' '),hs=String(PKD[i].h).trim();
+    if(!n&&!hs)continue;
+    if(!n)return er('Baris '+(i+1)+': isi nama produk',i,'pn');
+    const h=Number(hs);
+    if(hs===''||!Number.isInteger(h)||h<1||h>10000000)return er('Baris '+(i+1)+' ('+n+'): harga harus bilangan bulat, 1 sampai 10.000.000',i,'ph');
+    const k=n.toLowerCase();if(seen.has(k))return er('Baris '+(i+1)+': nama "'+n+'" sudah ada di baris '+(seen.get(k)+1),i,'pn');
+    seen.set(k,i);out.push({nama:n.slice(0,40),harga:h})}
+  S.produk=out;PKD=null;save();msg='Daftar produk disimpan ('+out.length+' produk)';render();
+}
 function parsePk(t){return String(t||'').split('\n').map(l=>{const m=l.split('=');const n=m[0].trim().slice(0,40),h=Math.round(+String(m[1]||'').replace(/[^\d]/g,''));return n?{nama:n,harga:h>0?h:0}:null}).filter(Boolean).slice(0,60)}
 function pkText(a){return (a||[]).map(x=>x.nama+(x.harga?' = '+x.harga:'')).join('\n')}
 function demoData(){
@@ -815,9 +838,9 @@ function openSheet(oi,ix){
   $('#fd').value=it?it.date:iso(new Date());$('#fq').value=it?it.qty:'';$('#fs').value=it?sq(it):'';$('#fr').value=it?(it.ret||''):'';FS.s=!!it&&it.sold!=null;fPrev();$('#fp').value=it?it.prod:LASTP.p;$('#fh').value=it?it.price:LASTP.h;
   $('#fe').textContent='';$('#prl').innerHTML=(S.produk||[]).map(p=>`<option value="${esc(p.nama)}">`).join('');$('#sh').classList.add('on');
 }
-document.addEventListener('input',e=>{if(/^f[qsrh]$/.test(e.target.id)){if(e.target.id==='fs')FS.s=true;if((e.target.id==='fq'||e.target.id==='fr')&&!FS.s)$('#fs').value=Math.max(0,(+$('#fq').value||0)-(+$('#fr').value||0))||'';fPrev()}if(e.target.id==='fp'&&!ED&&S){const q=e.target.value.trim().toLowerCase(),p=(S.produk||[]).find(x=>x.nama.toLowerCase()===q&&x.harga>0);if(p)$('#fh').value=p.harga}});
+document.addEventListener('input',e=>{const pr=e.target.closest&&e.target.closest('.pkr');if(pr&&PKD){const r=PKD[+pr.dataset.r];if(r){if(e.target.classList.contains('pn'))r.n=e.target.value;else if(e.target.classList.contains('ph'))r.h=e.target.value;e.target.classList.remove('bad');$('#pke').textContent=''}return}if(/^f[qsrh]$/.test(e.target.id)){if(e.target.id==='fs')FS.s=true;if((e.target.id==='fq'||e.target.id==='fr')&&!FS.s)$('#fs').value=Math.max(0,(+$('#fq').value||0)-(+$('#fr').value||0))||'';fPrev()}if(e.target.id==='fp'&&!ED&&S){const q=e.target.value.trim().toLowerCase(),p=(S.produk||[]).find(x=>x.nama.toLowerCase()===q&&x.harga>0);if(p)$('#fh').value=p.harga}});
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;msg='';render();window.scrollTo(0,0);return}
+  const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;msg='';PKD=null;render();window.scrollTo(0,0);return}
   const b=e.target.closest('[data-a]');if(!b){if(e.target.id==='sh')$('#sh').classList.remove('on');if(e.target.id==='sh2')$('#sh2').classList.remove('on');return}
   const a=b.dataset.a;msg='';
   if(a.startsWith('ob-')){obAct(a);return}
@@ -848,7 +871,10 @@ document.addEventListener('click',async e=>{
   else if(a==='copyrep'){msg=(await cp(report()))?'Tagihan tersalin':'Gagal menyalin';render()}
   else if(a==='backup'){msg=(await cp(JSON.stringify(S)))?'Cadangan tersalin':'Gagal menyalin';if(msg==='Cadangan tersalin'){S.backupAt=Date.now();save()}render()}
   else if(a==='savenm'){S.nama=$('#nm').value.trim()||'KonsiKu';S.owner=$('#ow').value.trim();S.wa=$('#wa2').value.trim();S.kota=$('#kt').value.trim();S.bank=$('#bk').value.trim();save();msg='Profil usaha disimpan';render()}
-  else if(a==='savepk'){S.produk=parsePk($('#pk').value);save();msg='Daftar produk disimpan';render()}
+  else if(a==='savepk')pkSave();
+  else if(a==='pkadd'){if(PKD.length>=60){$('#pke').textContent='Maksimal 60 produk';return}PKD.push({n:'',h:''});pkDraw(PKD.length-1)}
+  else if(a==='pkdel'){PKD.splice(+b.dataset.r,1);if(!PKD.length)PKD.push({n:'',h:''});pkDraw()}
+  else if(a==='pksort'){PKD.sort((x,y)=>String(x.n).trim()===''?1:String(y.n).trim()===''?-1:String(x.n).localeCompare(String(y.n),'id',{sensitivity:'base'}));pkDraw()}
   else if(a==='rmdemo'){if(confirm('Hapus semua data contoh? Anda akan kembali ke layar awal.')){S={outlets:[{name:'Contoh',items:[]}],pay:[],bahan:[],mov:[],rek:[]};save();render()}}
   else if(a==='rmlogo'){delete S.logo;save();msg='Logo dihapus';render()}
   else if(a==='bin'||a==='bout'||a==='bnew'||a==='eb'||a==='bop')openG(a==='bin'?'in':a==='bout'?'out':a==='bop'?'opname':'master',b.dataset.id)
