@@ -67,7 +67,14 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Keamanan: semua data lewat `/api/data` dengan PIN. Setelah 10 kali salah PIN, alamat IP itu dikunci 10 menit. Gunakan PIN yang tidak mudah ditebak (bukan 123456).
 - Font memakai Google Fonts. Tanpa internet, tampilan memakai font cadangan.
 
+## Biaya dan Laporan (v1.9)
+- **Menu Biaya**: catat pengeluaran (tanggal, jumlah, kategori, keterangan), ubah/hapus, ringkasan per kategori, filter periode (bulan ini / 7 hari / semua).
+- **Laporan** berbentuk tabel dan mengikuti filter periode: Pembayaran masuk, Per cara bayar, Rincian per pembayaran (satu klaster per pembayaran, berisi tabel titipan yang dilunasi), lalu di bagian bawah **Biaya** dan **Hasil** (pembayaran masuk dikurangi biaya = untung/rugi).
+- Pembelian bahan baku di menu Bahan (selain stok awal) otomatis ikut dihitung sebagai biaya di Laporan, sebagai baris terpisah, sehingga tidak perlu dicatat dua kali.
+- Semua teks di aplikasi tidak lagi menyebut nama server atau penyedia hosting.
+
 ## Versi
+- **1.9.0** (23 Nov 2026): menu Biaya, Laporan berbentuk tabel dengan klaster per pembayaran, hasil akhir di bawah Laporan, info server disembunyikan.
 - **1.8.0** (23 Nov 2026): menu Lainnya: Ganti PIN, Simpan ke file (.json), Pulihkan dari file.
 - **1.7.0** (23 Nov 2026): halaman utama hanya PIN; pendaftaran pengguna baru lewat layar sambutan 5 langkah (termasuk Buat PIN); data tiap pengguna terpisah di server dan di perangkat; `APP_PIN` tidak lagi wajib (akun lama tetap jalan).
 - **1.6.1** (23 Nov 2026): layar pendaftaran awal selalu memakai logo dan nama KonsiKu, tidak lagi memakai logo/nama sisa dari data lama di browser.
