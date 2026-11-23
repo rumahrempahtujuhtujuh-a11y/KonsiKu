@@ -40,6 +40,7 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 ## Menu Bayar
 - Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
 - **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.
+- **Pilih titipan yang dibayar (v1.9.1):** di form *Catat pembayaran* tampil daftar titipan outlet yang belum lunas. Centang titipan yang dibayar, jumlah terisi otomatis (bisa diubah). Titipan yang sudah lunas tidak tampil lagi. Bila tidak ada yang dicentang, pembayaran tetap dialokasikan ke titipan paling lama lebih dulu.
 - Pembayaran dialokasikan ke titipan paling lama lebih dulu, sehingga tiap titipan di tab Outlet berlabel *Lunas*, *Sebagian*, atau *Belum*.
 - Beranda menampilkan *Belum dibayar* dan *Sudah diterima*. Laporan WhatsApp menambahkan baris *Sudah dibayar* dan *Sisa* bila sudah ada pembayaran.
 
