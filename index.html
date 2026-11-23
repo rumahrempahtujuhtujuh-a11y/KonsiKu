@@ -172,6 +172,9 @@ nav:empty{display:none}
 .kh{font-weight:700;color:var(--mu);font-size:.68rem;text-transform:uppercase}.kh span:nth-child(n+3){text-align:right}
 .grid>*{min-width:0}.c .v,.hero .hv{overflow-wrap:anywhere}
 
+.om{margin-top:14px}.omh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 2px;border-bottom:2px solid var(--bd)}.omh b{font-size:.98rem}
+.og{margin-top:8px}.og>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 2px}.og>summary::-webkit-details-marker{display:none}.og>summary::before{content:"\25B8";color:var(--mu);font-size:.8rem;transition:transform .15s}.og[open]>summary::before{transform:rotate(90deg)}.og>summary .gs{margin-left:auto;font-weight:800;font-size:.85rem}
+.og .tb td .x{margin-left:3px;width:30px;height:30px}.og .tb th.n:last-child,.og .tb td.n:last-child{white-space:nowrap}
 .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;border-radius:12px}
 .tb{width:100%;border-collapse:collapse;font-size:.78rem;line-height:1.3;min-width:300px}
 .tb th{background:var(--inp);color:var(--mu);font-weight:700;text-align:left;padding:8px 9px;white-space:nowrap;font-size:.72rem}
@@ -347,7 +350,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='1.9.2',APP_D='23 Nov 2026';
+const APP_V='1.9.3',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -385,12 +388,29 @@ function home(){
   </div>
   <div class="sec">Titipan terbaru</div><div class="c">${rec.length?rec.map(i=>`<div class="row"><div class="who">${av(i.oi,i.o)}<div><b>${fd(i.date)}</b><div class="m">${sq(i)} ${esc(i.prod)}</div></div></div><div style="text-align:right"><b>Rp ${rp(iv(i))}</b><div><span class="tag">${esc(short(i.o))}</span></div></div>${i.c?'':`<button class="x" data-a="edit" data-o="${i.oi}" data-i="${i.ix}" aria-label="Ubah titipan">${ic('edit')}</button>`}</div>`).join(''):'<div class="m">Belum ada titipan.</div>'}</div>`+ana();
 }
+// Lipat/buka kelompok: kunci -> true/false (bila belum pernah diubah: terbuka jika masih ada tagihan)
+const FOLD={};
 function out(){
+  const MN=ym=>ML[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
+  const grp=(oi,o,ym,key,title,list,left,open)=>{
+    const sub=list.reduce((a,i)=>a+iv(i),0),sis=list.reduce((a,i)=>a+(left.get(i)||0),0),k=oi+'|'+ym+'|'+key,op=k in FOLD?FOLD[k]:open;
+    return `<details class="og" data-k="${k}"${op?' open':''}><summary><span class="tag ${key==='b'?'w':'ok'}">${title}</span><span class="m">${list.length} entri</span><span class="gs">${key==='b'&&sis>0?'Sisa Rp '+rp(sis):'Rp '+rp(sub)}</span></summary><div class="tw"><table class="tb"><thead><tr><th>Tanggal</th><th>Produk</th><th class="n">Jml</th><th class="n">Subtotal</th><th class="n">Aksi</th></tr></thead><tbody>`+
+    list.map(i=>{const st=AL[oi].get(i);const ix=o.items.indexOf(i);return `<tr><td>${sd(i.date)}</td><td>${esc(i.prod)}<small>@ Rp ${rp(i.price)}${i.ret?' · retur '+i.ret:''}${st[0]==='Sebagian'?' · <b style="color:#b45309">sebagian</b>':''}</small></td><td class="n">${sq(i)}</td><td class="n">${rp(iv(i))}</td><td class="n"><button class="x" aria-label="Ubah titipan" data-a="edit" data-o="${oi}" data-i="${ix}">${ic('edit')}</button><button class="x" aria-label="Hapus titipan" data-a="del" data-o="${oi}" data-i="${ix}">${ic('trash')}</button></td></tr>`}).join('')+
+    `</tbody><tfoot><tr><td colspan="3">Jumlah</td><td class="n">${rp(sub)}</td><td></td></tr></tfoot></table></div></details>`};
   const AL=S.outlets.map((o,oi)=>alloc(oi));
-  return `<h1>Outlet</h1><p class="sub">Daftar titipan per outlet</p><div class="acts"><button class="btn p" data-a="addo">${ic('plus')}Tambah outlet</button></div>`+
-  S.outlets.map((o,oi)=>`<div class="c" style="margin-bottom:12px"><div class="row" style="padding-top:0"><div class="who">${av(oi,o.name)}<div><b>Outlet ${esc(o.name)}</b><button class="x" data-a="edito" data-o="${oi}" aria-label="Ubah nama outlet">${ic('edit')}</button><button class="x" data-a="delo" data-o="${oi}" aria-label="Hapus outlet">${ic('trash')}</button><div class="m">${act(o).length} entri berjalan</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(tot(o))}</b><div class="m">Sisa Rp ${rp(tot(o)-paid(oi))}</div><div><button class="btn s" data-a="add" data-o="${oi}" style="margin-top:4px;padding:6px 10px">${ic('plus')}Titipan</button></div></div></div>`+
-  sorted(o).map(i=>`<div class="row"><div><b>${fd(i.date)}</b><div class="m">${sq(i)} ${esc(i.prod)}${dtl(i)} · <span class="tag ${AL[oi].get(i)[1]}">${AL[oi].get(i)[0]}</span></div></div><div>Rp ${rp(iv(i))}<button class="x" aria-label="Ubah titipan" data-a="edit" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('edit')}</button><button class="x" aria-label="Hapus titipan" data-a="del" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('trash')}</button></div></div>`).join('')+`</div>`).join('');
+  return `<h1>Outlet</h1><p class="sub">Daftar titipan per outlet, dikelompokkan per bulan dan status bayar</p><div class="acts"><button class="btn p" data-a="addo">${ic('plus')}Tambah outlet</button></div>`+
+  S.outlets.map((o,oi)=>{
+    const left=new Map();plan(oi).its.forEach(t=>left.set(t.i,Math.max(0,t.left)));
+    const by={};sorted(o).forEach(i=>{(by[i.date.slice(0,7)]=by[i.date.slice(0,7)]||[]).push(i)});
+    const months=Object.keys(by).sort().reverse();
+    const body=months.map(ym=>{
+      const L=by[ym],bl=L.filter(i=>AL[oi].get(i)[0]!=='Lunas'&&AL[oi].get(i)[0]!=='Tdk terjual'),ln=L.filter(i=>!bl.includes(i));
+      const tt=L.reduce((a,i)=>a+iv(i),0),sis=bl.reduce((a,i)=>a+(left.get(i)||0),0);
+      return `<div class="om"><div class="omh"><b>${MN(ym)}</b><span class="m">Rp ${rp(tt)}${sis>0?' · sisa Rp '+rp(sis):' · lunas'}</span></div>`+
+        (bl.length?grp(oi,o,ym,'b','Belum lunas',bl,left,true):'')+(ln.length?grp(oi,o,ym,'l','Lunas',ln,left,false):'')+`</div>`}).join('');
+    return `<div class="c" style="margin-bottom:12px"><div class="row" style="padding-top:0"><div class="who">${av(oi,o.name)}<div><b>Outlet ${esc(o.name)}</b><button class="x" data-a="edito" data-o="${oi}" aria-label="Ubah nama outlet">${ic('edit')}</button><button class="x" data-a="delo" data-o="${oi}" aria-label="Hapus outlet">${ic('trash')}</button><div class="m">${act(o).length} entri berjalan</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(tot(o))}</b><div class="m">Sisa Rp ${rp(tot(o)-paid(oi))}</div><div><button class="btn s" data-a="add" data-o="${oi}" style="margin-top:4px;padding:6px 10px">${ic('plus')}Titipan</button></div></div></div>`+(body||'<span class="d">Belum ada titipan.</span>')+`</div>`}).join('');
 }
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('og'))FOLD[d.dataset.k]=d.open},true);
 function report(){
   let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n';
   S.outlets.forEach((o,oi)=>{t+=`\n${String.fromCharCode(65+oi)}. Outlet ${o.name}\n`;sorted(o).forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${sq(i)} ${i.prod} Rp. ${rp(iv(i))}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(tot(o))},-*\n`;if(paid(oi)>0)t+=`Sudah dibayar : Rp.${rp(paid(oi))},-\n*Sisa ${short(o.name)} : Rp.${rp(tot(o)-paid(oi))},-*\n`});

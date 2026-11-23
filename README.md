@@ -42,6 +42,10 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 - **Tagihan dihitung dari jumlah terjual**, bukan jumlah titipan. Retur tidak ditagih. Terjual terisi otomatis sama dengan titipan dikurangi retur sampai Anda mengubahnya; ubah titipan lewat tombol pensil saat laporan penjualan masuk.
 - Titipan lama (tanpa data terjual) dianggap terjual semua, sehingga tagihan lama tidak berubah.
 
+## Menu Outlet: tabel dan kelompok (v1.9.3)
+- Titipan tiap outlet tampil sebagai **tabel** (Tanggal, Produk, Jml terjual, Subtotal, Aksi ubah/hapus).
+- Dikelompokkan **per bulan**, lalu per status: *Belum lunas* (terbuka) dan *Lunas* (terlipat). Tekan judul kelompok untuk membuka/menutup.
+
 ## Menu Bayar
 - Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
 - **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.
