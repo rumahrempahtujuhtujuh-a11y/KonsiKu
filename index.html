@@ -200,10 +200,13 @@ nav:empty{display:none}
 <label>Outlet</label><select id="fo"></select>
 <div class="two">
 <div><label>Tanggal</label><input type="date" id="fd"></div>
-<div><label>Jumlah</label><input type="number" id="fq" min="1" inputmode="numeric" placeholder="12"></div>
+<div><label>Jumlah titipan</label><input type="number" id="fq" min="1" inputmode="numeric" placeholder="12"></div>
 <div><label>Produk</label><input id="fp" list="prl" maxlength="40" placeholder="mis. Jahe Merah Bubuk"><datalist id="prl"></datalist></div>
 <div><label>Harga satuan (Rp)</label><input type="number" id="fh" inputmode="numeric" placeholder="10000"></div>
+<div><label>Terjual</label><input type="number" id="fs" min="0" inputmode="numeric" placeholder="0"></div>
+<div><label>Retur</label><input type="number" id="fr" min="0" inputmode="numeric" placeholder="0"></div>
 </div>
+<div class="d" id="fz" style="margin-top:8px"></div>
 <div class="d" id="fe" style="color:#dc2626;margin-top:8px"></div>
 <div class="acts" style="margin:16px 0 0"><button class="btn p" data-a="save" style="flex:1;justify-content:center">Simpan</button><button class="btn" data-a="close">Batal</button></div>
 </div></div>
@@ -344,10 +347,15 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='1.9.1',APP_D='23 Nov 2026';
+const APP_V='1.9.2',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
-const tot=o=>act(o).reduce((s,i)=>s+i.qty*i.price,0);
+// Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
+const sq=i=>i.sold!=null?i.sold:i.qty-(i.ret||0);
+const iv=i=>sq(i)*i.price;
+const dtl=i=>(i.sold!=null||i.ret)?` <small>(titip ${i.qty}${i.ret?', retur '+i.ret:''}${rm(i)>0?', sisa '+rm(i):''})</small>`:'';
+const rm=i=>Math.max(0,i.qty-sq(i)-(i.ret||0));
+const tot=o=>act(o).reduce((s,i)=>s+iv(i),0);
 const sorted=o=>[...act(o)].sort((a,b)=>a.date.localeCompare(b.date));
 const NAV=[['home','home','Beranda'],['out','store','Outlet'],['pay','wallet','Bayar'],['bhn','box','Bahan'],['biaya','biaya','Biaya'],['rep','doc','Laporan'],['more','sliders','Lainnya']];
 
@@ -355,9 +363,9 @@ function home(){
   const now=new Date(),ym=iso(now).slice(0,7),td=iso(now),h=now.getHours();
   const hi=h<11?'pagi':h<15?'siang':h<18?'sore':'malam';
   const all=[];S.outlets.forEach((o,oi)=>o.items.forEach((i,ix)=>all.push({...i,o:o.name,oi,ix})));
-  const mon=all.filter(i=>i.date.startsWith(ym)),t=mon.reduce((s,i)=>s+i.qty*i.price,0),por=mon.reduce((s,i)=>s+i.qty,0);
+  const mon=all.filter(i=>i.date.startsWith(ym)),t=mon.reduce((s,i)=>s+iv(i),0),por=mon.reduce((s,i)=>s+sq(i),0);
   const days=new Set(mon.map(i=>i.date)).size,tdI=all.filter(i=>i.date===td);
-  const mx=all.reduce((a,i)=>!a||i.qty>a.qty?i:a,null);
+  const mx=all.reduce((a,i)=>!a||sq(i)>sq(a)?i:a,null);
   const PD=S.outlets.reduce((s,o,oi)=>s+paid(oi),0),OW=S.outlets.reduce((s,o,oi)=>s+Math.max(0,due(oi)),0),UN=S.outlets.filter((o,oi)=>due(oi)>0).length;
   const UNI=[];S.outlets.forEach((o,oi)=>{const A=alloc(oi);sorted(o).forEach(i=>{if(A.get(i)[0]!=='Lunas')UNI.push(i)})});
   const rec=[...all].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
@@ -366,26 +374,26 @@ function home(){
   return `<h1>Selamat ${hi}</h1><p class="sub">${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}</p>
     ${S.backupAt?'':`<div class="ban">${ic('shield')}<div><p><b>Waktunya mencadangkan data.</b> Belum pernah dicadangkan. Salin cadangan lalu simpan ke WhatsApp pribadi atau catatan.</p><div class="r"><button class="btn p s" data-a="backup">Cadangkan sekarang</button><a data-a="later">Nanti</a></div></div></div>`}
   ${msg?`<div class="ban" style="background:var(--pri2);color:var(--pri)"><b>${msg}</b></div>`:''}
-  <div class="hero"><small>${ic('receipt')}Tagihan berjalan dari titipan belum lunas</small><div class="hv">Rp ${rp(OW)}</div><div class="hd2"><span>${UNI.length} titipan</span><span>${UNI.reduce((x,i)=>x+i.qty,0)} porsi</span><span>${UN} outlet</span></div></div>
+  <div class="hero"><small>${ic('receipt')}Tagihan berjalan dari titipan belum lunas</small><div class="hv">Rp ${rp(OW)}</div><div class="hd2"><span>${UNI.length} titipan</span><span>${UNI.reduce((x,i)=>x+sq(i),0)} porsi</span><span>${UN} outlet</span></div></div>
   <div class="qa"><button class="k-amber" data-a="add">${ic3('plus','#F59E0B')}Titipan</button><button class="k-sky" data-a="addpay">${ic3('wallet','#2D8CFF')}Bayar</button><button class="k-grape" data-a="bin">${ic3('cart','#7C4DFF')}Belanja</button><button class="k-rose" data-a="copyrep">${ic3('copy','#F43F8E')}Salin tagihan</button></div>
   <div class="grid">
-  ${card('box','Hari ini',tdI.reduce((s,i)=>s+i.qty,0)+' porsi','Rp '+rp(tdI.reduce((s,i)=>s+i.qty*i.price,0)))}
+  ${card('box','Hari ini',tdI.reduce((s,i)=>s+sq(i),0)+' porsi','Rp '+rp(tdI.reduce((s,i)=>s+iv(i),0)))}
   ${card('trend','Rata-rata/hari','Rp '+rp(days?t/days:0),'bulan '+ML[now.getMonth()])}
   ${card('store','Outlet aktif',S.outlets.length,S.outlets.map(o=>short(o.name)).join(', ')||'-')}
-  ${card('list','Tertinggi',mx?mx.qty+' porsi':'-',mx?fd(mx.date):'belum ada data')}
+  ${card('list','Tertinggi',mx?sq(mx)+' porsi':'-',mx?fd(mx.date):'belum ada data')}
    ${card('cal','Titipan '+ML[now.getMonth()],'Rp '+rp(t),por+' porsi · '+days+' hari')}${card('doc','Sudah diterima','Rp '+rp(PD),'periode berjalan',1)}
   </div>
-  <div class="sec">Titipan terbaru</div><div class="c">${rec.length?rec.map(i=>`<div class="row"><div class="who">${av(i.oi,i.o)}<div><b>${fd(i.date)}</b><div class="m">${i.qty} ${esc(i.prod)}</div></div></div><div style="text-align:right"><b>Rp ${rp(i.qty*i.price)}</b><div><span class="tag">${esc(short(i.o))}</span></div></div>${i.c?'':`<button class="x" data-a="edit" data-o="${i.oi}" data-i="${i.ix}" aria-label="Ubah titipan">${ic('edit')}</button>`}</div>`).join(''):'<div class="m">Belum ada titipan.</div>'}</div>`+ana();
+  <div class="sec">Titipan terbaru</div><div class="c">${rec.length?rec.map(i=>`<div class="row"><div class="who">${av(i.oi,i.o)}<div><b>${fd(i.date)}</b><div class="m">${sq(i)} ${esc(i.prod)}</div></div></div><div style="text-align:right"><b>Rp ${rp(iv(i))}</b><div><span class="tag">${esc(short(i.o))}</span></div></div>${i.c?'':`<button class="x" data-a="edit" data-o="${i.oi}" data-i="${i.ix}" aria-label="Ubah titipan">${ic('edit')}</button>`}</div>`).join(''):'<div class="m">Belum ada titipan.</div>'}</div>`+ana();
 }
 function out(){
   const AL=S.outlets.map((o,oi)=>alloc(oi));
   return `<h1>Outlet</h1><p class="sub">Daftar titipan per outlet</p><div class="acts"><button class="btn p" data-a="addo">${ic('plus')}Tambah outlet</button></div>`+
   S.outlets.map((o,oi)=>`<div class="c" style="margin-bottom:12px"><div class="row" style="padding-top:0"><div class="who">${av(oi,o.name)}<div><b>Outlet ${esc(o.name)}</b><button class="x" data-a="edito" data-o="${oi}" aria-label="Ubah nama outlet">${ic('edit')}</button><button class="x" data-a="delo" data-o="${oi}" aria-label="Hapus outlet">${ic('trash')}</button><div class="m">${act(o).length} entri berjalan</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(tot(o))}</b><div class="m">Sisa Rp ${rp(tot(o)-paid(oi))}</div><div><button class="btn s" data-a="add" data-o="${oi}" style="margin-top:4px;padding:6px 10px">${ic('plus')}Titipan</button></div></div></div>`+
-  sorted(o).map(i=>`<div class="row"><div><b>${fd(i.date)}</b><div class="m">${i.qty} ${esc(i.prod)} · <span class="tag ${AL[oi].get(i)[1]}">${AL[oi].get(i)[0]}</span></div></div><div>Rp ${rp(i.qty*i.price)}<button class="x" aria-label="Ubah titipan" data-a="edit" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('edit')}</button><button class="x" aria-label="Hapus titipan" data-a="del" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('trash')}</button></div></div>`).join('')+`</div>`).join('');
+  sorted(o).map(i=>`<div class="row"><div><b>${fd(i.date)}</b><div class="m">${sq(i)} ${esc(i.prod)}${dtl(i)} · <span class="tag ${AL[oi].get(i)[1]}">${AL[oi].get(i)[0]}</span></div></div><div>Rp ${rp(iv(i))}<button class="x" aria-label="Ubah titipan" data-a="edit" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('edit')}</button><button class="x" aria-label="Hapus titipan" data-a="del" data-o="${oi}" data-i="${o.items.indexOf(i)}">${ic('trash')}</button></div></div>`).join('')+`</div>`).join('');
 }
 function report(){
   let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n';
-  S.outlets.forEach((o,oi)=>{t+=`\n${String.fromCharCode(65+oi)}. Outlet ${o.name}\n`;sorted(o).forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${i.qty} ${i.prod} Rp. ${rp(i.qty*i.price)}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(tot(o))},-*\n`;if(paid(oi)>0)t+=`Sudah dibayar : Rp.${rp(paid(oi))},-\n*Sisa ${short(o.name)} : Rp.${rp(tot(o)-paid(oi))},-*\n`});
+  S.outlets.forEach((o,oi)=>{t+=`\n${String.fromCharCode(65+oi)}. Outlet ${o.name}\n`;sorted(o).forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${sq(i)} ${i.prod} Rp. ${rp(iv(i))}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(tot(o))},-*\n`;if(paid(oi)>0)t+=`Sudah dibayar : Rp.${rp(paid(oi))},-\n*Sisa ${short(o.name)} : Rp.${rp(tot(o)-paid(oi))},-*\n`});
   if(S.outlets.length>1)t+=`\n*Total semua : Rp.${rp(S.outlets.reduce((s,o)=>s+tot(o),0))},-*\n`;
   if(S.outlets.length>1&&S.pay.length)t+=`Sudah dibayar semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+paid(oi),0))},-\n*Sisa semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+tot(o)-paid(oi),0))},-*\n`;
   return t+payInfo();
@@ -393,7 +401,7 @@ function report(){
 // Tiap pembayaran = satu klaster. Pembayaran dialokasikan ke titipan paling lama lebih dulu (sama seperti label Lunas/Sebagian).
 function plan(oi,cid){
   const o=S.outlets[oi],cin=x=>cid?x.c===cid:!x.c;
-  const its=o.items.filter(cin).sort((a,b)=>a.date.localeCompare(b.date)).map(i=>({i,full:i.qty*i.price,left:i.qty*i.price}));
+  const its=o.items.filter(cin).sort((a,b)=>a.date.localeCompare(b.date)).map(i=>({i,full:iv(i),left:iv(i)}));
   const ps=S.pay.filter(p=>p.o===oi&&cin(p)).sort((a,b)=>a.date.localeCompare(b.date));
   // Pembayaran dengan titipan terpilih: dialokasikan ke titipan itu dulu; kelebihan/tanpa pilihan: paling lama lebih dulu
   const res=ps.map(p=>{let rem=p.amt;const L=[];
@@ -407,7 +415,7 @@ function plan(oi,cid){
 function clus(oi,cid){return plan(oi,cid).res}
 function CL(){const r=[];S.outlets.forEach((o,oi)=>{[undefined,...(S.rek||[]).filter(x=>x.o===oi).map(x=>x.id)].forEach(cid=>clus(oi,cid).forEach(c=>r.push(c)))});return r.sort((a,b)=>b.p.date.localeCompare(a.p.date))}
 function ctext(c){const o=S.outlets[c.oi],p=c.p;let t='Bismillah,  rekap titipan '+(S.nama||'KonsiKu')+' :\n\nOutlet '+o.name+'\nPembayaran '+fd(p.date)+' ('+(p.m||'Tunai')+')'+(p.ket?' - '+p.ket:'')+'\n\n';
-  c.L.forEach((l,n)=>{t+=`${n+1}. ${fd(l.i.date)} - ${l.i.qty} ${l.i.prod} Rp. ${rp(l.full)}`+(l.rest>0||l.bf>0?` (dibayar Rp. ${rp(l.u)}${l.rest>0?', sisa Rp. '+rp(l.rest):''})`:'')+'\n'});
+  c.L.forEach((l,n)=>{t+=`${n+1}. ${fd(l.i.date)} - ${sq(l.i)} ${l.i.prod} Rp. ${rp(l.full)}`+(l.rest>0||l.bf>0?` (dibayar Rp. ${rp(l.u)}${l.rest>0?', sisa Rp. '+rp(l.rest):''})`:'')+'\n'});
   t+=`\n*Total dibayar : Rp.${rp(p.amt)},-*\n`;if(c.lebih>0)t+=`Kelebihan bayar : Rp.${rp(c.lebih)},-\n`;return t}
 const KAT=['Kemasan','Upah / gaji','Transport / BBM','Listrik, gas, air','Sewa','Promosi','Peralatan','Lain-lain'];
 const PLB={bln:'bulan ini','7':'7 hari terakhir',all:'semua waktu'};
@@ -448,7 +456,7 @@ function rep(){
   const list=[...cl].sort((a,b)=>b.p.date.localeCompare(a.p.date));
   const t1=list.length?tb([['Tanggal'],['Outlet'],['Cara'],['Jumlah','n']],list.map(c=>`<tr><td>${sd(c.p.date)}</td><td>${esc(short(S.outlets[c.oi].name))}</td><td>${esc(c.p.m||'Tunai')}</td><td class="n">${rp(c.p.amt)}</td></tr>`).join(''),`<tr><td colspan="3">Total masuk</td><td class="n">${rp(IN)}</td></tr>`):'<div class="c"><span class="d">Belum ada pembayaran yang masuk pada periode ini.</span></div>';
   const t2=list.length?tb([['Cara bayar'],['Transaksi','n'],['Jumlah','n']],Object.entries(M).sort((a,b)=>b[1].v-a[1].v).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v.n}x</td><td class="n">${rp(v.v)}</td></tr>`).join(''),`<tr><td>Total</td><td class="n">${list.length}x</td><td class="n">${rp(IN)}</td></tr>`):'';
-  const clusters=list.map(c=>{const p=c.p;return `<div class="c" style="margin-bottom:12px"><div class="ch2"><div class="who">${av(c.oi,S.outlets[c.oi].name)}<div><b class="serif" style="font-size:1.02rem">Outlet ${esc(S.outlets[c.oi].name)}</b><div class="m">Dibayar ${fd(p.date)} · ${esc(p.m||'Tunai')}${p.ket?' · '+esc(p.ket):''}</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(p.amt)}</b>${c.cid?'<div><span class="tag">ditutup</span></div>':''}</div></div>${tb([['Tgl'],['Produk'],['Subtotal','n'],['Dibayar','n'],['Sisa','n']],c.L.map(l=>`<tr><td>${sd(l.i.date)}</td><td>${esc(l.i.prod)}<small>${l.i.qty} x Rp ${rp(l.i.price)}</small></td><td class="n">${rp(l.full)}</td><td class="n gr">${rp(l.u)}</td><td class="n ${l.rest>0?'rd':''}">${l.rest>0?rp(l.rest):'<small>'+note(l)+'</small>'}</td></tr>`).join('')+(c.lebih>0?`<tr><td colspan="3">Kelebihan bayar</td><td class="n" colspan="2">${rp(c.lebih)}</td></tr>`:''),`<tr><td colspan="3">Total dibayar</td><td class="n" colspan="2">${rp(p.amt)}</td></tr>`)}<div class="acts" style="margin:10px 0 0"><button class="btn s" data-a="copyc" data-id="${p.id}">${ic('copy')}Salin rekap</button>${c.cid?'':`<button class="btn s" data-a="pedit" data-id="${p.id}">Ubah pembayaran</button>`}</div></div>`}).join('');
+  const clusters=list.map(c=>{const p=c.p;return `<div class="c" style="margin-bottom:12px"><div class="ch2"><div class="who">${av(c.oi,S.outlets[c.oi].name)}<div><b class="serif" style="font-size:1.02rem">Outlet ${esc(S.outlets[c.oi].name)}</b><div class="m">Dibayar ${fd(p.date)} · ${esc(p.m||'Tunai')}${p.ket?' · '+esc(p.ket):''}</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(p.amt)}</b>${c.cid?'<div><span class="tag">ditutup</span></div>':''}</div></div>${tb([['Tgl'],['Produk'],['Subtotal','n'],['Dibayar','n'],['Sisa','n']],c.L.map(l=>`<tr><td>${sd(l.i.date)}</td><td>${esc(l.i.prod)}<small>${sq(l.i)} x Rp ${rp(l.i.price)}</small></td><td class="n">${rp(l.full)}</td><td class="n gr">${rp(l.u)}</td><td class="n ${l.rest>0?'rd':''}">${l.rest>0?rp(l.rest):'<small>'+note(l)+'</small>'}</td></tr>`).join('')+(c.lebih>0?`<tr><td colspan="3">Kelebihan bayar</td><td class="n" colspan="2">${rp(c.lebih)}</td></tr>`:''),`<tr><td colspan="3">Total dibayar</td><td class="n" colspan="2">${rp(p.amt)}</td></tr>`)}<div class="acts" style="margin:10px 0 0"><button class="btn s" data-a="copyc" data-id="${p.id}">${ic('copy')}Salin rekap</button>${c.cid?'':`<button class="btn s" data-a="pedit" data-id="${p.id}">Ubah pembayaran</button>`}</div></div>`}).join('');
   const bRows=Object.entries(KT).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${rp(v)}</td></tr>`).join('')+(BB>0?`<tr><td>Pembelian bahan baku<small>otomatis dari menu Bahan</small></td><td class="n">${rp(BB)}</td></tr>`:'');
   const bDet=[...BM.map(x=>({date:x.date,k:x.kat,ket:x.ket||'',v:x.amt})),...BK.map(x=>{const b=(S.bahan||[]).find(y=>y.id===x.b);return{date:x.date,k:'Bahan baku',ket:(b?b.nama:'')+' '+x.qty+(b&&b.sat?' '+b.sat:''),v:x.total}})].sort((a,b)=>b.date.localeCompare(a.date));
   return `<h1>Laporan</h1><p class="sub">Pembayaran masuk, rincian titipan, dan biaya</p>${chipsP()}${cl.length?`<div class="acts"><button class="btn p" data-a="copyall">${ic('copy')}Salin semua rekap</button></div>`:''}${msg?`<p><b>${msg}</b></p>`:''}
@@ -477,16 +485,16 @@ function ana(){
   const f=all.filter(i=>per==='bln'?i.date.startsWith(ym):per==='7'?i.date>=l7:true);
   const head=`<div class="sec">Analisa produk</div><div class="chips">${[['bln','Bulan ini'],['7','7 hari'],['all','Semua']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-a="per" data-p="${k}">${l}</button>`).join('')}</div>`;
   if(!f.length)return head+'<div class="c"><span class="m">Belum ada data pada periode ini.</span></div>';
-  const P={};f.forEach(i=>{const k=i.prod.trim().toLowerCase(),p=P[k]||(P[k]={n:i.prod.trim(),q:0,r:0,d:new Set(),lo:1e12,hi:0});p.q+=i.qty;p.r+=i.qty*i.price;p.d.add(i.date);p.lo=Math.min(p.lo,i.price);p.hi=Math.max(p.hi,i.price)});
-  const pr=Object.values(P).sort((a,b)=>b.r-a.r),TQ=f.reduce((s,i)=>s+i.qty,0),TR=f.reduce((s,i)=>s+i.qty*i.price,0);
-  const D={};f.forEach(i=>{const d=D[i.date]||(D[i.date]={q:0,r:0});d.q+=i.qty;d.r+=i.qty*i.price});
+  const P={};f.forEach(i=>{const k=i.prod.trim().toLowerCase(),p=P[k]||(P[k]={n:i.prod.trim(),q:0,r:0,d:new Set(),lo:1e12,hi:0});p.q+=sq(i);p.r+=iv(i);p.d.add(i.date);p.lo=Math.min(p.lo,i.price);p.hi=Math.max(p.hi,i.price)});
+  const pr=Object.values(P).sort((a,b)=>b.r-a.r),TQ=f.reduce((s,i)=>s+sq(i),0),TR=f.reduce((s,i)=>s+iv(i),0);
+  const D={};f.forEach(i=>{const d=D[i.date]||(D[i.date]={q:0,r:0});d.q+=sq(i);d.r+=iv(i)});
   const dk=Object.keys(D).sort(),nd=dk.length,aq=TQ/nd;
   const hi=dk.reduce((a,k)=>D[k].q>D[a].q?k:a,dk[0]),lo=dk.reduce((a,k)=>D[k].q<D[a].q?k:a,dk[0]);
   const W=Array.from({length:7},()=>({q:0,n:0}));dk.forEach(k=>{const w=pd(k).getDay();W[w].q+=D[k].q;W[w].n++});
   const wd=W.map((w,i)=>({l:WL[i],v:w.n?w.q/w.n:0})),bw=wd.reduce((a,b)=>b.v>a.v?b:a);
   const ord=[1,2,3,4,5,6,0].map(i=>wd[i]);
   const cd=(l,v,d)=>`<div class="c"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
-  const outs=S.outlets.map(o=>{const it=o.items.filter(i=>f.some(x=>x===i||(x.o===o.name&&x.date===i.date&&x.qty===i.qty&&x.prod===i.prod&&x.price===i.price)));return{l:'Outlet '+o.name,q:it.reduce((s,i)=>s+i.qty,0),r:it.reduce((s,i)=>s+i.qty*i.price,0)}});
+  const outs=S.outlets.map(o=>{const it=o.items.filter(i=>f.some(x=>x===i||(x.o===o.name&&x.date===i.date&&x.qty===i.qty&&x.sold===i.sold&&x.prod===i.prod&&x.price===i.price)));return{l:'Outlet '+o.name,q:it.reduce((s,i)=>s+sq(i),0),r:it.reduce((s,i)=>s+iv(i),0)}});
   return head+`<div class="grid">${cd('Total porsi',TQ,nd+' hari tercatat')}${cd('Total omzet','Rp '+rp(TR),'periode terpilih')}${cd('Harga rata-rata','Rp '+rp(TR/TQ),'per porsi (tertimbang)')}${cd('Rata-rata/hari',n1(aq)+' porsi','Rp '+rp(TR/nd))}</div>
   <div class="sec">Tren harian</div><div class="c"><div class="d" style="margin-bottom:6px">Porsi per hari (14 hari terakhir), garis putus = rata-rata</div>${vb(dk.slice(-14).map(k=>({l:pd(k).getDate(),v:D[k].q})),aq)}</div>
   <div class="sec">Pola hari</div><div class="c"><div class="d" style="margin-bottom:6px">Rata-rata porsi per hari dalam minggu</div>${vb(ord)}</div>
@@ -513,7 +521,7 @@ function inP(d){if(per==='all')return true;const t=new Date();return per==='bln'
 let GS={m:'',id:'',w:0};
 function stock(){S.bahan=S.bahan||[];S.mov=S.mov||[];return S.bahan.map(b=>{const m=S.mov.filter(x=>x.b===b.id),I=m.filter(x=>x.t==='in'),qi=I.reduce((s,x)=>s+x.qty,0),ti=I.reduce((s,x)=>s+x.total,0),qo=m.filter(x=>x.t==='out').reduce((s,x)=>s+x.qty,0),avg=qi?ti/qi:0;return{...b,qi,qo,sisa:r3(qi-qo),avg,nilai:(qi-qo)*avg}})}
 const bn=id=>(S.bahan.find(b=>b.id===id)||{nama:'(dihapus)',sat:''});
-function bsum(){const st=stock(),exp=S.mov.filter(x=>x.t==='in'&&!x.awal&&!x.adj&&inP(x.date)).reduce((s,x)=>s+x.total,0),om=S.outlets.reduce((s,o)=>s+o.items.filter(i=>inP(i.date)).reduce((a,i)=>a+i.qty*i.price,0),0);return{st,exp,om,sal:om-exp}}
+function bsum(){const st=stock(),exp=S.mov.filter(x=>x.t==='in'&&!x.awal&&!x.adj&&inP(x.date)).reduce((s,x)=>s+x.total,0),om=S.outlets.reduce((s,o)=>s+o.items.filter(i=>inP(i.date)).reduce((a,i)=>a+iv(i),0),0);return{st,exp,om,sal:om-exp}}
 const rc=n=>{const a=Math.abs(n),f=x=>(Math.round(x*10)/10).toString().replace('.',',');return (n<0?'−':'')+(a>=1e6?f(a/1e6)+' jt':a>=1e4?Math.round(a/1e3)+' rb':rp(a))};
 function pstart(){const t=new Date();return per==='all'?'0000-00-00':per==='bln'?iso(t).slice(0,7)+'-01':iso(new Date(t.getTime()-6*864e5))}
 function mut(b){const s0=pstart();let a=0,i=0,o=0,j=0;S.mov.forEach(x=>{if(x.b!==b.id)return;const g=x.t==='in'?1:-1;if(x.date<s0)a+=g*x.qty;else if(x.awal)a+=x.qty;else if(x.adj)j+=g*x.qty;else if(x.t==='in')i+=x.qty;else o+=x.qty});return{a:r3(a),i:r3(i),o:r3(o),j:r3(j),z:r3(a+i-o+j)}}
@@ -582,7 +590,7 @@ document.addEventListener('input',e=>{if(GS.m==='opname'&&(e.target.id==='b3'||e
 const paid=oi=>(S.pay||[]).filter(p=>p.o===oi&&!p.c).reduce((s,p)=>s+p.amt,0);
 const due=oi=>tot(S.outlets[oi])-paid(oi);
 // Pembayaran dialokasikan ke titipan yang dipilih, sisanya ke titipan paling lama lebih dulu
-function alloc(oi){const m=new Map();plan(oi).its.forEach(t=>{m.set(t.i,t.left<=0?['Lunas','ok']:t.left<t.full?['Sebagian','w']:['Belum',''])});return m}
+function alloc(oi){const m=new Map();plan(oi).its.forEach(t=>{m.set(t.i,t.full<=0?['Tdk terjual','']:t.left<=0?['Lunas','ok']:t.left<t.full?['Sebagian','w']:['Belum',''])});return m}
 const pst=(t,p)=>t===0?['Kosong','']:p<t?(p>0?['Sebagian','w']:['Belum lunas','']):p>t?['Lebih bayar','w']:['Lunas','ok'];
 function pay(){
   const rows=S.outlets.map((o,oi)=>{const t=tot(o),p=paid(oi);return{o,oi,t,p,s:t-p}});
@@ -596,12 +604,12 @@ function pay(){
   <div class="sec">Riwayat pembayaran</div><div class="c">${hist.length?hist.map(x=>{const o=S.outlets[x.o]||{name:'?'};return `<div class="row"><div class="who">${av(x.o,o.name)}<div><b>${fd(x.date)}</b><div class="m">${esc(short(o.name))} · ${esc(x.m||'Tunai')}${x.ket?' · '+esc(x.ket):''}</div></div></div><div style="text-align:right">+Rp ${rp(x.amt)}<button class="x" data-a="pedit" data-id="${x.id}" aria-label="Ubah pembayaran">${ic('edit')}</button><button class="x" data-a="pdel" data-id="${x.id}" aria-label="Hapus pembayaran">${ic('trash')}</button></div></div>`}).join(''):'<span class="d">Belum ada pembayaran.</span>'}</div>`+rekHtml();
 }
 function rekHtml(){const R=[...(S.rek||[])].reverse().slice(0,20);return `<div class="sec">Tagihan yang sudah ditutup</div><div class="c">${R.length?R.map(r=>{const o=S.outlets[r.o]||{name:'?'};return `<div class="row"><div><b>Outlet ${esc(short(o.name))}</b><div class="m">${fd(r.from)} s/d ${fd(r.to)} · ${r.por} porsi</div><div class="m">Total Rp ${rp(r.total)} · Dibayar Rp ${rp(r.paid)}${r.sisa>0?' · <b style="color:#dc2626">Sisa Rp '+rp(r.sisa)+'</b>':''}</div></div><div style="display:flex;gap:6px"><button class="btn s" data-a="copyrek" data-id="${r.id}">Salin</button><button class="btn s" data-a="reopen" data-id="${r.id}">Buka lagi</button></div></div>`}).join(''):'<span class="d">Belum ada tagihan yang ditutup.</span>'}</div>`}
-function rtext(r){const o=S.outlets[r.o]||{name:'?',items:[]},it=o.items.filter(i=>i.c===r.id).sort((a,b)=>a.date.localeCompare(b.date));let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n\nOutlet '+o.name+'\n';it.forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${i.qty} ${i.prod} Rp. ${rp(i.qty*i.price)}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(r.total)},-*\nSudah dibayar : Rp.${rp(r.paid)},-\n*Sisa ${short(o.name)} : Rp.${rp(r.sisa)},-*\n`;return t+payInfo()}
+function rtext(r){const o=S.outlets[r.o]||{name:'?',items:[]},it=o.items.filter(i=>i.c===r.id).sort((a,b)=>a.date.localeCompare(b.date));let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n\nOutlet '+o.name+'\n';it.forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${sq(i)} ${i.prod} Rp. ${rp(iv(i))}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(r.total)},-*\nSudah dibayar : Rp.${rp(r.paid)},-\n*Sisa ${short(o.name)} : Rp.${rp(r.sisa)},-*\n`;return t+payInfo()}
 function closeP(oi){const o=S.outlets[oi],a=act(o);if(!a.length){msg='Belum ada titipan yang berjalan';render();return}
   const t=tot(o),p=paid(oi),s=t-p;
   if(!confirm('Tutup tagihan Outlet '+o.name+'?\nTotal Rp '+rp(t)+', dibayar Rp '+rp(p)+', sisa Rp '+rp(Math.max(s,0))+'.\n'+(s>0?'Sisa yang belum dibayar tidak dibawa ke periode baru, tetapi tercatat di riwayat.\n':'')+'Tagihan kembali 0 dan mulai dihitung lagi.'))return;
   const id=uid(),ds=a.map(i=>i.date).sort();
-  S.rek=S.rek||[];S.rek.push({id,o:oi,date:iso(new Date()),from:ds[0],to:ds[ds.length-1],n:a.length,por:a.reduce((x,i)=>x+i.qty,0),total:t,paid:p,sisa:s});
+  S.rek=S.rek||[];S.rek.push({id,o:oi,date:iso(new Date()),from:ds[0],to:ds[ds.length-1],n:a.length,por:a.reduce((x,i)=>x+sq(i),0),total:t,paid:p,sisa:s});
   a.forEach(i=>{i.c=id});S.pay.forEach(x=>{if(x.o===oi&&!x.c)x.c=id});
   save();msg='Tagihan ditutup. Periode baru dimulai dari 0';render()}
 function payPrev(){const e=$('#p6');if(!e||!$('#p3'))return;GS.w=0;const s=dueE(+$('#p1').value),a=+$('#p3').value||0;e.textContent='Sisa tagihan sekarang: Rp '+rp(Math.max(s,0))+(a>0?' · setelah dibayar: Rp '+rp(Math.max(s-a,0)):'')}
@@ -616,7 +624,7 @@ function payOpen(oi){
 function payList(){
   const e=$('#p7');if(!e)return;const oi=+$('#p1').value,L=payOpen(oi);
   GS.sel=(GS.sel||[]).filter(id=>L.some(t=>t.i.id===id));
-  e.innerHTML=L.length?`<div class="m" style="margin-bottom:6px">Centang titipan yang dibayar. Titipan yang sudah lunas tidak tampil. Kosongkan bila tidak ingin memilih (dibayar mulai dari yang paling lama).</div>`+L.map(t=>`<label class="row" style="cursor:pointer;gap:10px;text-transform:none;letter-spacing:0;margin:0;align-items:center"><input type="checkbox" data-pi="${t.i.id}" style="width:auto;margin:0"${GS.sel.includes(t.i.id)?' checked':''}><div style="flex:1"><b>${fd(t.i.date)}</b><div class="m">${t.i.qty} ${esc(t.i.prod)}${t.left<t.full?' · sisa dari Rp '+rp(t.full):''}</div></div><div>Rp ${rp(t.left)}</div></label>`).join(''):'<span class="d">Tidak ada titipan yang belum lunas di outlet ini.</span>';
+  e.innerHTML=L.length?`<div class="m" style="margin-bottom:6px">Centang titipan yang dibayar. Titipan yang sudah lunas tidak tampil. Kosongkan bila tidak ingin memilih (dibayar mulai dari yang paling lama).</div>`+L.map(t=>`<label class="row" style="cursor:pointer;gap:10px;text-transform:none;letter-spacing:0;margin:0;align-items:center"><input type="checkbox" data-pi="${t.i.id}" style="width:auto;margin:0"${GS.sel.includes(t.i.id)?' checked':''}><div style="flex:1"><b>${fd(t.i.date)}</b><div class="m">${sq(t.i)} ${esc(t.i.prod)}${t.left<t.full?' · sisa dari Rp '+rp(t.full):''}</div></div><div>Rp ${rp(t.left)}</div></label>`).join(''):'<span class="d">Tidak ada titipan yang belum lunas di outlet ini.</span>';
 }
 function paySel(){
   const oi=+$('#p1').value,L=payOpen(oi);
@@ -778,15 +786,16 @@ async function obAct(a){
   }
   obRender();
 }
-let ED=null,LASTP={p:'',h:''};
+let ED=null,LASTP={p:'',h:''},FS={s:false};
+function fPrev(){const q=+$('#fq').value||0,s=+$('#fs').value||0,r=+$('#fr').value||0,e=$('#fz');if(!e)return;const sisa=q-s-r;e.innerHTML=q>0?`Sisa di outlet: <b>${sisa}</b>${sisa<0?' (terjual + retur melebihi titipan)':''} · Ditagih: <b>Rp ${rp(s*(+$('#fh').value||0))}</b>`:''}
 function openSheet(oi,ix){
   const it=(ix!=null&&S.outlets[oi])?S.outlets[oi].items[ix]:null;ED=it?{o:oi,i:ix}:null;
   $('#fo').innerHTML=S.outlets.map((o,i)=>`<option value="${i}">${esc(o.name)}</option>`).join('');
   $('#fo').value=oi||0;$('#fh2').textContent=it?'Ubah titipan':'Tambah titipan';
-  $('#fd').value=it?it.date:iso(new Date());$('#fq').value=it?it.qty:'';$('#fp').value=it?it.prod:LASTP.p;$('#fh').value=it?it.price:LASTP.h;
+  $('#fd').value=it?it.date:iso(new Date());$('#fq').value=it?it.qty:'';$('#fs').value=it?sq(it):'';$('#fr').value=it?(it.ret||''):'';FS.s=!!it&&it.sold!=null;fPrev();$('#fp').value=it?it.prod:LASTP.p;$('#fh').value=it?it.price:LASTP.h;
   $('#fe').textContent='';$('#prl').innerHTML=(S.produk||[]).map(p=>`<option value="${esc(p.nama)}">`).join('');$('#sh').classList.add('on');
 }
-document.addEventListener('input',e=>{if(e.target.id==='fp'&&!ED&&S){const q=e.target.value.trim().toLowerCase(),p=(S.produk||[]).find(x=>x.nama.toLowerCase()===q&&x.harga>0);if(p)$('#fh').value=p.harga}});
+document.addEventListener('input',e=>{if(/^f[qsrh]$/.test(e.target.id)){if(e.target.id==='fs')FS.s=true;if((e.target.id==='fq'||e.target.id==='fr')&&!FS.s)$('#fs').value=Math.max(0,(+$('#fq').value||0)-(+$('#fr').value||0))||'';fPrev()}if(e.target.id==='fp'&&!ED&&S){const q=e.target.value.trim().toLowerCase(),p=(S.produk||[]).find(x=>x.nama.toLowerCase()===q&&x.harga>0);if(p)$('#fh').value=p.harga}});
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;msg='';render();window.scrollTo(0,0);return}
   const b=e.target.closest('[data-a]');if(!b){if(e.target.id==='sh')$('#sh').classList.remove('on');if(e.target.id==='sh2')$('#sh2').classList.remove('on');return}
@@ -799,9 +808,12 @@ document.addEventListener('click',async e=>{
     if(!isD(d))return fe('Isi tanggal dengan benar');
     if(!Number.isInteger(q)||q<1||q>100000)return fe('Jumlah harus bilangan bulat, 1 sampai 100.000');
     if(!Number.isInteger(p)||p<1||p>10000000)return fe('Harga harus bilangan bulat, 1 sampai 10.000.000');
+    const sv=$('#fs').value===''?q-(+$('#fr').value||0):+$('#fs').value,rt=+$('#fr').value||0;
+    if(!Number.isInteger(sv)||sv<0||!Number.isInteger(rt)||rt<0)return fe('Terjual dan retur harus bilangan bulat, minimal 0');
+    if(sv+rt>q)return fe('Terjual + retur ('+(sv+rt)+') melebihi jumlah titipan ('+q+')');
     const pr=$('#fp').value.trim().slice(0,40),ni=+$('#fo').value;if(!pr)return fe('Isi nama produk');
-    if(ED){const src=S.outlets[ED.o],n={...src.items[ED.i],date:d,qty:q,prod:pr,price:p};if(ni===ED.o)src.items[ED.i]=n;else{src.items.splice(ED.i,1);S.outlets[ni].items.push(n)}ED=null;msg='Titipan diperbarui'}
-    else{S.outlets[ni].items.push({id:uid(),date:d,qty:q,prod:pr,price:p});LASTP={p:pr,h:p};msg='Titipan tersimpan'}
+    if(ED){const src=S.outlets[ED.o],n={...src.items[ED.i],date:d,qty:q,sold:sv,ret:rt,prod:pr,price:p};if(ni===ED.o)src.items[ED.i]=n;else{src.items.splice(ED.i,1);S.outlets[ni].items.push(n)}ED=null;msg='Titipan diperbarui'}
+    else{S.outlets[ni].items.push({id:uid(),date:d,qty:q,sold:sv,ret:rt,prod:pr,price:p});LASTP={p:pr,h:p};msg='Titipan tersimpan'}
     save();$('#sh').classList.remove('on');render()}
   else if(a==='delo'){const oi=+b.dataset.o,o=S.outlets[oi];if(S.outlets.length<2){msg='Minimal harus ada satu outlet';render();return}
     const np=(S.pay||[]).filter(p=>p.o===oi).length;

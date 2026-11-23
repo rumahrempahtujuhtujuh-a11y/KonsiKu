@@ -37,6 +37,11 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 - Data awal ada di `api/_seed.js`: hanya satu outlet contoh bernama "Contoh" tanpa titipan (ganti namanya lewat tombol pensil di menu Outlet). Berkas ini tidak dilayani ke publik dan hanya dipakai bila server masih kosong.
 - Cadangan manual lewat **Lainnya > Salin cadangan** tetap tersedia.
 
+## Titipan: terjual dan retur (v1.9.2)
+- Form titipan punya kolom *Jumlah titipan*, *Terjual*, dan *Retur*. Sisa di outlet = titipan - terjual - retur, dihitung otomatis.
+- **Tagihan dihitung dari jumlah terjual**, bukan jumlah titipan. Retur tidak ditagih. Terjual terisi otomatis sama dengan titipan dikurangi retur sampai Anda mengubahnya; ubah titipan lewat tombol pensil saat laporan penjualan masuk.
+- Titipan lama (tanpa data terjual) dianggap terjual semua, sehingga tagihan lama tidak berubah.
+
 ## Menu Bayar
 - Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
 - **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.
