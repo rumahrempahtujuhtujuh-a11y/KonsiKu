@@ -1,0 +1,68 @@
+# KonsiKu
+
+Aplikasi web sederhana untuk mencatat titipan (konsinyasi) ke banyak outlet, menagih per periode, mencatat pembayaran, menganalisa produk, dan mengelola stok bahan baku. Cocok untuk UMKM makanan, kue, roti, kopi, dan produk titipan lainnya.
+Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa build dan tanpa dependensi npm.
+
+## Isi folder
+- `index.html` : seluruh tampilan dan logika aplikasi
+- `api/data.js` : penyimpanan data di server (Upstash Redis) dengan PIN
+- `api/_seed.js` : data awal, hanya dibaca server
+- `manifest.webmanifest`, `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` : agar bisa dipasang di layar utama HP (logo KonsiKu bawaan)
+- `vercel.json` : pengaturan Vercel (header keamanan, tidak diindeks mesin pencari)
+- `robots.txt` : meminta mesin pencari tidak mengindeks
+
+## Deploy ke GitHub dan Vercel
+1. Buat repository baru di GitHub (Private) dan unggah semua file, termasuk folder `api/`.
+2. Di vercel.com pilih *Add New > Project*, impor repository. Framework Preset: **Other**. Build Command dan Output Directory kosongkan, lalu *Deploy*.
+3. **Hubungkan database.** Di project Vercel buka tab *Storage > Create Database*, pilih **Upstash Redis** (paket gratis cukup), lalu *Connect* ke project ini. Vercel otomatis mengisi variabel `KV_REST_API_URL` dan `KV_REST_API_TOKEN` (atau `UPSTASH_REDIS_REST_URL` dan `UPSTASH_REDIS_REST_TOKEN`; keduanya didukung).
+4. **Buat PIN.** Di *Settings > Environment Variables* tambahkan `APP_PIN` dengan nilai PIN/kata sandi pilihan Anda (disarankan minimal 8 karakter). Hanya yang tahu PIN yang bisa membaca atau mengubah data.
+5. **Redeploy** (tab *Deployments* > titik tiga > *Redeploy*) agar variabel terbaca.
+6. Buka alamat `.vercel.app`, masukkan PIN. Data lama yang ada di browser HP otomatis dipindahkan ke server pada saat pertama masuk. Lalu pilih *Tambahkan ke layar utama*.
+
+## Penyimpanan data
+- Data utama ada di server (Upstash Redis lewat `api/data.js`), jadi sama di semua perangkat. Browser hanya menyimpan salinan agar cepat dan tetap terbuka saat sinyal buruk.
+- Perubahan saat offline tersimpan di perangkat dan dikirim otomatis begitu online.
+- Setiap data punya nomor revisi. Bila dua perangkat mengubah data bersamaan, yang kalah dimuat ulang dari server dan salinannya disimpan di menu **Lainnya > Data yang tertimpa**.
+- Titik pulih harian: server menyimpan keadaan data sebelum perubahan pertama tiap hari, selama 30 hari (kunci `rr77:bak:TANGGAL`, bisa dibaca di konsol Upstash).
+- Data awal ada di `api/_seed.js`: hanya satu outlet contoh bernama "Contoh" tanpa titipan (ganti namanya lewat tombol pensil di menu Outlet). Berkas ini tidak dilayani ke publik dan hanya dipakai bila server masih kosong.
+- Cadangan manual lewat **Lainnya > Salin cadangan** tetap tersedia.
+
+## Menu Bayar
+- Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
+- **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.
+- Pembayaran dialokasikan ke titipan paling lama lebih dulu, sehingga tiap titipan di tab Outlet berlabel *Lunas*, *Sebagian*, atau *Belum*.
+- Beranda menampilkan *Belum dibayar* dan *Sudah diterima*. Laporan WhatsApp menambahkan baris *Sudah dibayar* dan *Sisa* bila sudah ada pembayaran.
+
+## Alur tagihan per periode
+- Titipan dicatat tiap hari. Setelah sekitar 7 sampai 8 hari, tagih ke outlet lalu tekan **Tutup tagihan** (menu Bayar, per outlet).
+- Titipan dan pembayaran periode itu ditandai tertutup, sehingga **tagihan kembali 0** dan dihitung lagi dari awal. Data lama tidak dihapus: tetap dipakai untuk analisa dan tersimpan di *Tagihan yang sudah ditutup* (ada tombol Salin untuk laporannya).
+- Sisa yang belum dibayar saat tutup tidak dibawa ke periode baru, hanya tercatat di riwayat.
+
+## Menu Beranda dan Analisa
+Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan ini / 7 hari / Semua) di bawahnya.
+
+## Beranda, Laporan, dan Ubah data
+- Kartu utama Beranda adalah **Tagihan berjalan**: sisa dari titipan yang belum lunas (periode yang belum ditutup).
+- **Laporan** berisi rekap per pembayaran (klaster). Tiap pembayaran yang masuk menjadi satu rekap berisi titipan yang dilunasinya (paling lama lebih dulu), dengan tombol *Salin rekap* untuk WhatsApp dan *Salin semua rekap*. Titipan yang belum dibayar tidak masuk rekap. Tombol *Salin tagihan* di Beranda menyalin daftar tagihan lengkap seperti laporan lama.
+- Tombol pensil (ubah) tersedia di: titipan (Beranda dan Outlet), nama outlet, pembayaran (Bayar dan Laporan), bahan baku, serta riwayat belanja/pemakaian bahan. Titipan di periode yang sudah ditutup tidak bisa diubah; tekan *Buka lagi* di menu Bayar (Tagihan yang sudah ditutup) bila perlu memperbaikinya.
+
+## Tampilan dan logo
+- Tema biru-teal dengan aksen amber. Tiap menu punya warna sendiri. Mengikuti mode gelap/terang HP. Font Plus Jakarta Sans dari Google Fonts (font cadangan dipakai bila tidak ada internet).
+- **Logo bawaan** adalah logo KonsiKu (`icon.svg`).
+- **Ganti logo** di *Lainnya > Profil usaha > Pilih logo*. Satu logo itu otomatis dipakai di header, layar PIN, pratinjau pengaturan, ikon tab browser, dan ikon layar utama HP. Logo ikut tersimpan di server sehingga sama di semua perangkat. Tombol *Hapus* mengembalikan logo KonsiKu.
+- Ikon layar utama HP: browser membaca ikon saat aplikasi dipasang. Setelah logo diganti, hapus pintasan lama lalu *Tambahkan ke layar utama* lagi agar ikon barunya terpakai.
+- Nama usaha di *Lainnya > Profil usaha* dipakai di header dan di awal laporan WhatsApp.
+
+## Catatan
+- Keamanan: semua data lewat `/api/data` dengan PIN. Setelah 10 kali salah PIN, alamat IP itu dikunci 10 menit.
+- Font memakai Google Fonts. Tanpa internet, tampilan memakai font cadangan.
+
+## Versi
+- **1.5.1** (23 Nov 2026): bila server masih kosong dan salinan di perangkat hanya berisi data contoh kosong, aplikasi memakai data awal dari server (bukan salinan kosong itu), sehingga data awal langsung tampil setelah memasukkan PIN.
+- **1.5.0** (23 Nov 2026): rebranding menjadi KonsiKu. Logo dan tema diganti (tidak lagi daun dan nasi bakar); satu logo pengguna dipakai di semua tampilan termasuk favicon dan ikon layar utama; produk dan harga bawaan di form titipan dikosongkan (nama produk wajib diisi); data awal berupa satu outlet contoh. Nama kunci penyimpanan internal (`rr77:*` di Redis dan `rr77*` di browser) sengaja tidak diubah supaya data pengguna lama tetap terbaca.
+- **1.4.1** (23 Nov 2026): perbaikan hasil uji menyeluruh. Dua pengguna yang menyimpan bersamaan kini digabung otomatis (tidak ada lagi yang tertimpa); data diperbarui otomatis dari server tiap 2 menit dan saat aplikasi dibuka kembali; validasi form titipan (jumlah dan harga harus bilangan bulat positif, ada pesan kesalahan); batas angka pada form bahan dan pembayaran; "Hapus semua" kini meminta mengetik HAPUS; server menolak data tidak valid tanpa membuat aplikasi mencoba menyimpan berulang.
+- **1.4.0** (20 Nov 2026): menu Bahan baku mengikuti alur persediaan standar (1 Bahan, 2 Masuk, 3 Keluar, 4 Opname); ringkasan mutasi Awal + Masuk - Keluar +/- Opname = Akhir; kartu stok per bahan dengan saldo berjalan; opname stok fisik yang mencatat selisih otomatis (tidak dihitung sebagai belanja).
+- **1.3.0** (20 Nov 2026): ikon menu 3D berwarna tanpa kotak latar (rumah, toko, dompet, kotak, dokumen, roda gigi, keranjang); latar warna menu aktif dihapus, diganti garis penanda kecil di atas ikon.
+- **1.2.0** (20 Nov 2026): ikon menu 3D berwarna (menu bawah, judul halaman, aksi cepat); tombol + Titipan di header dihapus; logo dan nama usaha di layar PIN sama dengan dashboard (disalin di perangkat); ikon aplikasi (layar utama) disamakan dengan logo daun.
+- **1.1.0** (20 Nov 2026): ikon tambah pada tombol Titipan dan Bahan, ikon hapus (tempat sampah) untuk titipan, pembayaran, riwayat bahan, bahan, dan outlet; hapus outlet; nomor versi di Lainnya dan layar PIN; latar logo transparan (putih tepi dibuang saat unggah); ikon masuk dan keluar.
+- Nomor versi ada di `APP_V` dalam `index.html`; naikkan setiap kali ada perubahan.
