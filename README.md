@@ -58,6 +58,7 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Font memakai Google Fonts. Tanpa internet, tampilan memakai font cadangan.
 
 ## Versi
+- **1.6.1** (23 Nov 2026): layar pendaftaran awal selalu memakai logo dan nama KonsiKu, tidak lagi memakai logo/nama sisa dari data lama di browser.
 - **1.6.0** (23 Nov 2026): pendaftaran pengguna baru. Bila data masih kosong, setelah memasukkan PIN muncul layar sambutan dengan tiga pilihan (atur usaha, coba data contoh, pulihkan dari cadangan) dan 4 langkah isian: identitas usaha, outlet, produk & harga, preferensi. Profil usaha kini memuat pemilik, WhatsApp, kota, dan rekening (rekening ikut di teks tagihan). Daftar produk & harga mengisi otomatis form titipan. Pengguna lama tidak terpengaruh.
 - **1.5.1** (23 Nov 2026): bila server masih kosong dan salinan di perangkat hanya berisi data contoh kosong, aplikasi memakai data awal dari server (bukan salinan kosong itu), sehingga data awal langsung tampil setelah memasukkan PIN.
 - **1.5.0** (23 Nov 2026): rebranding menjadi KonsiKu. Logo dan tema diganti (tidak lagi daun dan nasi bakar); satu logo pengguna dipakai di semua tampilan termasuk favicon dan ikon layar utama; produk dan harga bawaan di form titipan dikosongkan (nama produk wajib diisi); data awal berupa satu outlet contoh. Nama kunci penyimpanan internal (`rr77:*` di Redis dan `rr77*` di browser) sengaja tidak diubah supaya data pengguna lama tetap terbaca.

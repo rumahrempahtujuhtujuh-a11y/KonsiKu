@@ -325,7 +325,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung ke server. Periksa internet.');
 }
-const APP_V='1.6.0',APP_D='23 Nov 2026';
+const APP_V='1.6.1',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 const tot=o=>act(o).reduce((s,i)=>s+i.qty*i.price,0);
@@ -599,14 +599,14 @@ function obSave(){
   if(OB.step===4){['per','tab'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
 }
 function obRender(){
-  S.outlets=S.outlets||[];$('#nav').innerHTML='';$('#lo').hidden=false;applyBrand();
+  S.outlets=S.outlets||[];$('#nav').innerHTML='';$('#lo').hidden=false;LS.d('rr77logo');LS.s('rr77nama','KonsiKu');document.title='KonsiKu';applyBrand();
   const now=new Date();$('#hd').textContent=`${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}`;
   if(!OB)OB={step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home'},err:'',rs:false};
   const d=OB.d,v=x=>esc(d[x]||''),st=OB.step;let h='';
   const bars=`<div class="pb">${[1,2,3,4].map(i=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>`;
   const nav=(last)=>`<div class="er" id="oe">${esc(OB.err||'')}</div><div class="nv"><button class="bk" data-a="ob-back">Kembali</button><button class="btn p" data-a="${last?'ob-finish':'ob-next'}">${last?'Selesai &amp; mulai pakai':'Lanjut'}</button></div>`;
   if(st===0){
-    h=`<div class="lg">${'<img src="'+logoSrc()+'" alt="Logo">'}</div><h1>Selamat datang di KonsiKu</h1><p class="sub">Catat titipan ke outlet, tagihan, pembayaran, dan stok bahan usaha Anda langsung dari HP.</p>
+    h=`<div class="lg"><img src="${DEF_LOGO}" alt="KonsiKu"></div><h1>Selamat datang di KonsiKu</h1><p class="sub">Catat titipan ke outlet, tagihan, pembayaran, dan stok bahan usaha Anda langsung dari HP.</p>
     <div class="info">${ic('shield')}<div>Data tersimpan aman di server dengan PIN Anda dan disalin di perangkat ini. Gunakan <b>Salin cadangan</b> di menu Lainnya secara rutin untuk berjaga-jaga.</div></div>
     <button class="oc" data-a="ob-go">${ic('edit')}<div><b>Mulai atur usaha saya</b><span>4 langkah singkat: identitas, outlet, produk &amp; harga, preferensi.</span></div></button>
     <button class="oc" data-a="ob-demo">${ic('box')}<div><b>Coba dulu dengan data contoh</b><span>2 outlet fiktif, 4 produk, titipan, pembayaran, dan stok bahan. Bisa dihapus kapan saja.</span></div></button>
