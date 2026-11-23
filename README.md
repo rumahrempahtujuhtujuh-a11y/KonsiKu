@@ -5,7 +5,7 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 
 ## Isi folder
 - `index.html` : seluruh tampilan dan logika aplikasi
-- `api/data.js` : penyimpanan data di server (Upstash Redis) dengan PIN
+- `api/data.js` : penyimpanan data di server (Upstash Redis), satu akun per PIN
 - `api/_seed.js` : data awal, hanya dibaca server
 - `manifest.webmanifest`, `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` : agar bisa dipasang di layar utama HP (logo KonsiKu bawaan)
 - `vercel.json` : pengaturan Vercel (header keamanan, tidak diindeks mesin pencari)
@@ -15,9 +15,19 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 1. Buat repository baru di GitHub (Private) dan unggah semua file, termasuk folder `api/`.
 2. Di vercel.com pilih *Add New > Project*, impor repository. Framework Preset: **Other**. Build Command dan Output Directory kosongkan, lalu *Deploy*.
 3. **Hubungkan database.** Di project Vercel buka tab *Storage > Create Database*, pilih **Upstash Redis** (paket gratis cukup), lalu *Connect* ke project ini. Vercel otomatis mengisi variabel `KV_REST_API_URL` dan `KV_REST_API_TOKEN` (atau `UPSTASH_REDIS_REST_URL` dan `UPSTASH_REDIS_REST_TOKEN`; keduanya didukung).
-4. **Buat PIN.** Di *Settings > Environment Variables* tambahkan `APP_PIN` dengan nilai PIN/kata sandi pilihan Anda (disarankan minimal 8 karakter). Hanya yang tahu PIN yang bisa membaca atau mengubah data.
-5. **Redeploy** (tab *Deployments* > titik tiga > *Redeploy*) agar variabel terbaca.
-6. Buka alamat `.vercel.app`, masukkan PIN. Data lama yang ada di browser HP otomatis dipindahkan ke server pada saat pertama masuk. Lalu pilih *Tambahkan ke layar utama*.
+4. **Tidak perlu membuat PIN di Vercel.** Tiap pengguna membuat PINnya sendiri saat mendaftar di aplikasi. (Opsional: `APP_SALT` berisi teks acak untuk mengacak PIN di database; isi sekali sebelum ada pengguna dan jangan diganti lagi. Opsional: `APP_PIN` bila sudah punya data lama, supaya data lama tetap terbuka dengan PIN itu.)
+5. **Redeploy** (tab *Deployments* > titik tiga > *Redeploy*) bila baru mengubah variabel.
+6. Buka alamat `.vercel.app`. Pengguna baru menekan *Daftar usaha baru*, pengguna lama cukup memasukkan PIN. Lalu pilih *Tambahkan ke layar utama*.
+
+## Masuk dan pendaftaran (v1.7)
+- **Halaman utama hanya PIN.** Pengguna yang sudah terdaftar cukup memasukkan PIN untuk membuka usahanya. PIN yang belum terdaftar ditolak.
+- **Pengguna baru** menekan *Daftar usaha baru*: layar sambutan (atur usaha / data contoh / pulihkan cadangan), 4 langkah isian, lalu langkah terakhir **Buat PIN** (minimal 6 karakter, diulang dua kali). Akun dibuat saat langkah terakhir selesai. PIN yang sudah dipakai orang lain ditolak.
+- **Data tiap pengguna terpisah.** Server menyimpan data di kunci `kk:a:<hash PIN>:d` (revisi `:r`, titik pulih `:bak:TANGGAL`). Satu PIN hanya bisa membaca dan mengubah datanya sendiri. Di perangkat, salinan data hanya milik satu PIN; saat masuk dengan PIN berbeda, salinan pengguna sebelumnya dibuang sehingga tidak bercampur. Tombol keluar menghapus salinan di perangkat.
+- **Akun lama** (`APP_PIN` + kunci `rr77:data`) tetap terbuka dengan PIN lamanya, tanpa perubahan data.
+- Pembatas percobaan: 10 PIN salah per 10 menit per IP (juga berlaku saat mencoba PIN yang sudah dipakai); pendaftaran maksimal 10 per hari per IP.
+- **Ganti PIN**: Lainnya > Ganti PIN (isi PIN lama, PIN baru dua kali). Data dipindah ke PIN baru di server, isinya tetap. Untuk akun lama yang masih memakai `APP_PIN`, hapus `APP_PIN` di Vercel setelah mengganti PIN.
+- **Simpan ke file / Pulihkan dari file**: Lainnya > Cadangkan data > *Simpan ke file* mengunduh berkas .json; Pulihkan data > *Pilih file cadangan* menimpa seluruh data akun ini dengan isi berkas (ada konfirmasi). Salin/tempel teks cadangan tetap tersedia.
+- PIN tidak bisa dipulihkan bila lupa: ingatkan pengguna untuk rutin memakai *Salin cadangan*.
 
 ## Penyimpanan data
 - Data utama ada di server (Upstash Redis lewat `api/data.js`), jadi sama di semua perangkat. Browser hanya menyimpan salinan agar cepat dan tetap terbuka saat sinyal buruk.
@@ -54,10 +64,12 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Nama usaha di *Lainnya > Profil usaha* dipakai di header dan di awal laporan WhatsApp.
 
 ## Catatan
-- Keamanan: semua data lewat `/api/data` dengan PIN. Setelah 10 kali salah PIN, alamat IP itu dikunci 10 menit.
+- Keamanan: semua data lewat `/api/data` dengan PIN. Setelah 10 kali salah PIN, alamat IP itu dikunci 10 menit. Gunakan PIN yang tidak mudah ditebak (bukan 123456).
 - Font memakai Google Fonts. Tanpa internet, tampilan memakai font cadangan.
 
 ## Versi
+- **1.8.0** (23 Nov 2026): menu Lainnya: Ganti PIN, Simpan ke file (.json), Pulihkan dari file.
+- **1.7.0** (23 Nov 2026): halaman utama hanya PIN; pendaftaran pengguna baru lewat layar sambutan 5 langkah (termasuk Buat PIN); data tiap pengguna terpisah di server dan di perangkat; `APP_PIN` tidak lagi wajib (akun lama tetap jalan).
 - **1.6.1** (23 Nov 2026): layar pendaftaran awal selalu memakai logo dan nama KonsiKu, tidak lagi memakai logo/nama sisa dari data lama di browser.
 - **1.6.0** (23 Nov 2026): pendaftaran pengguna baru. Bila data masih kosong, setelah memasukkan PIN muncul layar sambutan dengan tiga pilihan (atur usaha, coba data contoh, pulihkan dari cadangan) dan 4 langkah isian: identitas usaha, outlet, produk & harga, preferensi. Profil usaha kini memuat pemilik, WhatsApp, kota, dan rekening (rekening ikut di teks tagihan). Daftar produk & harga mengisi otomatis form titipan. Pengguna lama tidak terpengaruh.
 - **1.5.1** (23 Nov 2026): bila server masih kosong dan salinan di perangkat hanya berisi data contoh kosong, aplikasi memakai data awal dari server (bukan salinan kosong itu), sehingga data awal langsung tampil setelah memasukkan PIN.

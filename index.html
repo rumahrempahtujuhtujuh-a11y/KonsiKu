@@ -303,13 +303,18 @@ async function applyBrand(){
 }
 function hdr(){applyBrand()}
 function brand(){return `<i class="lg has"><img src="${logoSrc()}" alt="Logo"></i>`}
-function lock(m){S=null;$('#lo').hidden=true;hdr();$('#nav').innerHTML='';$('#app').innerHTML=`<div class="lk">${brand()}<h1>${esc(LS.g('rr77nama')||'KonsiKu')}</h1><p class="sub">Masukkan PIN untuk membuka data</p><p class="ver">Versi ${APP_V}</p></div><div class="c"><label>PIN</label><input type="password" id="pin" autocomplete="current-password" autocapitalize="none">${m?`<p class="m" style="color:#dc2626">${esc(m)}</p>`:''}<button class="btn p" data-a="pin" style="margin-top:14px">${ic('login')}Masuk</button></div>`}
+async function aidOf(p){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('kk|'+p));return [...new Uint8Array(b)].slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of 'kk|'+p)h=((h<<5)+h+c.charCodeAt(0))|0;return 'f'+(h>>>0).toString(16)}}
+// Salinan data di perangkat hanya milik satu PIN. Bila PIN yang masuk berbeda, salinan pengguna sebelumnya dibuang agar data tidak bercampur.
+async function sepAccount(p){const a=await aidOf(p);if(LS.g('rr77aid')!==a){['rr77v2','rr77rev','rr77dirty','rr77lost','rr77base','rr77logo','rr77nama'].forEach(k=>LS.d(k));LS.s('rr77aid',a)}}
+function lock(m){S=null;OB=null;LS.d('rr77logo');LS.d('rr77nama');document.title='KonsiKu';$('#lo').hidden=true;hdr();$('#nav').innerHTML='';
+  $('#app').innerHTML=`<div class="lk"><i class="lg has"><img src="${DEF_LOGO}" alt="KonsiKu"></i><h1>KonsiKu</h1><p class="sub">Masukkan PIN untuk masuk ke usaha Anda</p></div><div class="c"><label style="margin-top:0">PIN</label><input type="password" id="pin" autocomplete="current-password" autocapitalize="none" maxlength="32">${m?`<p class="m" style="color:#dc2626;margin:8px 0 0">${esc(m)}</p>`:''}<button class="btn p" data-a="pin" style="margin-top:14px;width:100%;justify-content:center">${ic('login')}Masuk</button></div><div class="lk" style="padding:26px 0 0"><p class="m" style="margin:0 0 10px">Belum punya usaha di KonsiKu?</p><button class="btn" data-a="ob-reg">${ic('plus')}Daftar usaha baru</button><p class="ver">Versi ${APP_V}</p></div>`}
 function fail(m){S=null;$('#lo').hidden=true;hdr();$('#nav').innerHTML='';$('#app').innerHTML=`<div class="lk">${brand()}<h1>Tidak bisa memuat</h1><p class="sub">${esc(m)}</p></div><button class="btn p" data-a="retry">Coba lagi</button>`}
 async function boot(){
   if(!PIN){lock();return}
+  if(!LS.g('rr77aid'))LS.s('rr77aid',await aidOf(PIN));
   $('#nav').innerHTML='';$('#app').innerHTML='<p class="sub">Memuat data…</p>';
   let res=null;try{res=await api('GET')}catch(e){}
-  if(res&&res.r.status===401){PIN='';LS.d('rr77pin');lock('PIN salah');return}
+  if(res&&res.r.status===401){PIN='';LS.d('rr77pin');lock((res.j&&res.j.error)||'PIN salah');return}
   if(res&&res.r.status===429){lock((res.j&&res.j.error)||'Terlalu banyak percobaan');return}
   const L=lsData(),lr=+LS.g('rr77rev')||0,ld=LS.g('rr77dirty')==='1';
   if(res&&res.r.ok&&res.j&&valid(res.j.data)){
@@ -325,7 +330,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung ke server. Periksa internet.');
 }
-const APP_V='1.6.1',APP_D='23 Nov 2026';
+const APP_V='1.8.0',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 const tot=o=>act(o).reduce((s,i)=>s+i.qty*i.price,0);
@@ -394,9 +399,9 @@ function rep(){
 function more(){return `<h1>Lainnya</h1><p class="sub">Profil usaha, cadangan, dan data</p>
 ${LS.g('rr77lost')?`<div class="c" style="margin-bottom:12px"><b>Data yang tertimpa</b><p class="m">Perubahan dari perangkat ini tertimpa data server yang lebih baru. Salinannya masih tersimpan.</p><button class="btn s" data-a="copylost">Salin</button> <button class="btn s" data-a="droplost">Buang</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Penyimpanan</b><p class="m">Data tersimpan di server Vercel dan disalin di perangkat ini. Status: ${esc(stat||'-')}</p><button class="btn s" data-a="logout">${ic('logout')}Keluar</button></div><div class="c" style="margin-bottom:12px"><b>Profil usaha</b><label>Nama usaha</label><input id="nm" value="${esc(S.nama||'KonsiKu')}" maxlength="40"><label>Nama pemilik / pengelola</label><input id="ow" value="${esc(S.owner||'')}" maxlength="40"><label>No. WhatsApp usaha</label><input id="wa2" inputmode="tel" value="${esc(S.wa||'')}" maxlength="20" placeholder="08xx"><label>Kota</label><input id="kt" value="${esc(S.kota||'')}" maxlength="40"><label>Rekening / cara bayar (ikut di teks tagihan)</label><input id="bk" value="${esc(S.bank||'')}" maxlength="80" placeholder="mis. BSI 7123… a.n. …"><button class="btn p s" data-a="savenm" style="margin-top:10px">Simpan profil</button><label style="margin-top:18px">Logo</label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="logo has" style="width:64px;height:64px"><img src="${S.logo||DEF_LOGO}" alt="Logo"></div><div><label class="btn s" for="lg" style="margin:0;text-transform:none;letter-spacing:0">${S.logo?'Ganti logo':'Pilih logo'}</label><input type="file" id="lg" accept="image/*" style="display:none">${S.logo?`<button class="btn s" data-a="rmlogo" style="margin-left:8px">${ic('trash')}Hapus</button>`:''}</div></div><p class="m" style="margin:10px 0 0">Logo ini dipakai di semua tampilan: header, layar PIN, ikon tab browser, dan ikon layar utama HP (bila aplikasi dipasang ulang). Hapus untuk kembali ke logo KonsiKu.</p></div>
 ${S.demo?`<div class="c" style="margin-bottom:12px"><b>Data contoh aktif</b><p class="m">Yang tampil sekarang adalah data fiktif untuk mencoba aplikasi.</p><button class="btn s" data-a="rmdemo">${ic('trash')}Hapus data contoh</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Daftar produk &amp; harga</b><p class="m">Satu produk per baris, format: Nama = harga. Terisi otomatis di form titipan.</p><textarea id="pk" style="height:110px;font:inherit" placeholder="Jahe Merah Bubuk = 15000">${esc(pkText(S.produk))}</textarea><button class="btn p s" data-a="savepk" style="margin-top:10px">Simpan produk</button></div>
-<div class="c"><b>Cadangkan data</b><p class="m">Salin data ke clipboard, lalu simpan di WhatsApp pribadi atau catatan.${S.backupAt?' Terakhir: '+new Date(S.backupAt).toLocaleDateString('id-ID'):''}</p><button class="btn p s" data-a="backup">${ic('copy')}Salin cadangan</button></div>
-<div class="c" style="margin-top:12px"><b>Pulihkan data</b><p class="m">Tempel teks cadangan di bawah.</p><textarea id="rs" style="height:100px" placeholder="Tempel di sini"></textarea><button class="btn s" data-a="restore" style="margin-top:10px">Pulihkan</button></div>
-<div class="c" style="margin-top:12px"><b>Hapus semua data</b><p class="m">Tidak bisa dibatalkan.</p><button class="btn s" data-a="reset">${ic('trash')}Hapus semua</button></div><p class="ver">KonsiKu · versi ${APP_V} (${APP_D})</p>${msg?`<p><b>${msg}</b></p>`:''}`}
+<div class="c"><b>Cadangkan data</b><p class="m">Salin data ke clipboard, lalu simpan di WhatsApp pribadi atau catatan.${S.backupAt?' Terakhir: '+new Date(S.backupAt).toLocaleDateString('id-ID'):''}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn p s" data-a="backup">${ic('copy')}Salin cadangan</button><button class="btn s" data-a="savefile">${ic('doc')}Simpan ke file</button></div><p class="m" style="margin:8px 0 0">"Simpan ke file" mengunduh berkas .json ke perangkat ini.</p></div>
+<div class="c" style="margin-top:12px"><b>Pulihkan data</b><p class="m">Pilih berkas cadangan (.json), atau tempel teks cadangan di bawah. Seluruh data akun ini akan ditimpa.</p><label class="btn s" for="rsf" style="margin:0 0 10px">${ic('login')}Pilih file cadangan</label><input type="file" id="rsf" accept=".json,.txt,application/json,text/plain" hidden><textarea id="rs" style="height:100px" placeholder="Tempel di sini"></textarea><button class="btn s" data-a="restore" style="margin-top:10px">Pulihkan</button></div>
+<div class="c" style="margin-top:12px"><b>Ganti PIN</b><p class="m">PIN dipakai untuk masuk. Data Anda tetap sama setelah PIN diganti.</p><label>PIN lama</label><input type="password" id="cp0" autocomplete="current-password" autocapitalize="none" maxlength="32"><label>PIN baru <span class="m">(minimal 6 karakter, tanpa spasi)</span></label><input type="password" id="cp1" autocomplete="new-password" autocapitalize="none" maxlength="32"><label>Ulangi PIN baru</label><input type="password" id="cp2" autocomplete="new-password" autocapitalize="none" maxlength="32"><div class="er" id="cpe" style="color:#dc2626;font-size:.84rem;font-weight:600;margin-top:8px"></div><button class="btn p s" data-a="chpin" style="margin-top:6px">Ganti PIN</button></div><div class="c" style="margin-top:12px"><b>Hapus semua data</b><p class="m">Tidak bisa dibatalkan.</p><button class="btn s" data-a="reset">${ic('trash')}Hapus semua</button></div><p class="ver">KonsiKu · versi ${APP_V} (${APP_D})</p>${msg?`<p><b>${msg}</b></p>`:''}`}
 const WL=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const n1=x=>(Math.round(x*10)/10).toString().replace('.',',');
 function hb(rows){const mx=Math.max(...rows.map(r=>r.v),1);return rows.map((r,n)=>`<div class="hb" style="--k:${PAL[n%PAL.length]}"><div class="hl"><span>${esc(r.l)}</span><b>${r.t}</b></div><div class="tr"><i style="width:${Math.max(r.v/mx*100,2)}%"></i></div></div>`).join('')}
@@ -591,27 +596,30 @@ function demoData(){
          {id:u(),t:'out',b:bJ.id,date:dt(15),qty:6,jenis:'Pemakaian produksi',ket:''},{id:u(),t:'out',b:bK.id,date:dt(15),qty:5,jenis:'Pemakaian produksi',ket:''}],
     rek:[]};
 }
+const mkOB=mode=>({mode,step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home',pin:'',pin2:''},err:'',rs:false,pend:null,wait:false});
 function obSave(){
   if(!OB)return;const g=id=>{const e=$('#'+id);return e?e.value:null},d=OB.d;
   if(OB.step===1){['nama','owner','wa','kota','bank'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
   if(OB.step===2){const v=g('o_out');if(v!==null)d.out=v}
   if(OB.step===3){const r=[];document.querySelectorAll('.ob .prow').forEach(x=>{const i=x.querySelectorAll('input');r.push({n:i[0].value,h:i[1].value})});if(r.length)d.prod=r}
   if(OB.step===4){['per','tab'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
+  if(OB.step===5){['pin','pin2'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
 }
 function obRender(){
-  S.outlets=S.outlets||[];$('#nav').innerHTML='';$('#lo').hidden=false;LS.d('rr77logo');LS.s('rr77nama','KonsiKu');document.title='KonsiKu';applyBrand();
+  if(S)S.outlets=S.outlets||[];$('#nav').innerHTML='';$('#lo').hidden=!S;LS.d('rr77logo');LS.s('rr77nama','KonsiKu');document.title='KonsiKu';applyBrand();
   const now=new Date();$('#hd').textContent=`${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}`;
-  if(!OB)OB={step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home'},err:'',rs:false};
-  const d=OB.d,v=x=>esc(d[x]||''),st=OB.step;let h='';
-  const bars=`<div class="pb">${[1,2,3,4].map(i=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>`;
-  const nav=(last)=>`<div class="er" id="oe">${esc(OB.err||'')}</div><div class="nv"><button class="bk" data-a="ob-back">Kembali</button><button class="btn p" data-a="${last?'ob-finish':'ob-next'}">${last?'Selesai &amp; mulai pakai':'Lanjut'}</button></div>`;
+  if(!OB)OB=mkOB(S?'in':'reg');
+  const reg=OB.mode==='reg',N=reg?5:4,d=OB.d,v=x=>esc(d[x]||''),st=OB.step;let h='';
+  const bars=`<div class="pb">${Array.from({length:N},(_,i)=>`<i class="${i+1<=st?'on':''}"></i>`).join('')}</div>`;
+  const nav=(last)=>`<div class="er" id="oe">${esc(OB.err||'')}</div><div class="nv"><button class="bk" data-a="ob-back">Kembali</button><button class="btn p" data-a="${last?'ob-finish':'ob-next'}"${OB.wait?' disabled':''}>${OB.wait?'Menyimpan…':last?'Selesai &amp; mulai pakai':'Lanjut'}</button></div>`;
   if(st===0){
-    h=`<div class="lg"><img src="${DEF_LOGO}" alt="KonsiKu"></div><h1>Selamat datang di KonsiKu</h1><p class="sub">Catat titipan ke outlet, tagihan, pembayaran, dan stok bahan usaha Anda langsung dari HP.</p>
-    <div class="info">${ic('shield')}<div>Data tersimpan aman di server dengan PIN Anda dan disalin di perangkat ini. Gunakan <b>Salin cadangan</b> di menu Lainnya secara rutin untuk berjaga-jaga.</div></div>
-    <button class="oc" data-a="ob-go">${ic('edit')}<div><b>Mulai atur usaha saya</b><span>4 langkah singkat: identitas, outlet, produk &amp; harga, preferensi.</span></div></button>
+    h=`<div class="lg"><img src="${DEF_LOGO}" alt="KonsiKu"></div><h1>Selamat datang di KonsiKu</h1><p class="sub">Catat titipan ke outlet, tagihan, pembayaran, dan stok bahan usaha Anda langsung dari HP atau laptop.</p>
+    <div class="info">${ic('shield')}<div>${reg?'Data usaha Anda <b>terpisah</b> dari pengguna lain dan hanya bisa dibuka dengan <b>PIN</b> yang Anda buat. Gunakan <b>Salin cadangan</b> di menu Lainnya secara rutin untuk berjaga-jaga.':'Data tersimpan aman di server dengan PIN Anda dan disalin di perangkat ini. Gunakan <b>Salin cadangan</b> di menu Lainnya secara rutin untuk berjaga-jaga.'}</div></div>
+    <button class="oc" data-a="ob-go">${ic('edit')}<div><b>Mulai atur usaha saya</b><span>${reg?'5 langkah singkat: identitas, outlet, produk &amp; harga, preferensi, PIN.':'4 langkah singkat: identitas, outlet, produk &amp; harga, preferensi.'}</span></div></button>
     <button class="oc" data-a="ob-demo">${ic('box')}<div><b>Coba dulu dengan data contoh</b><span>2 outlet fiktif, 4 produk, titipan, pembayaran, dan stok bahan. Bisa dihapus kapan saja.</span></div></button>
-    <button class="oc" data-a="ob-rs">${ic('copy')}<div><b>Pulihkan dari cadangan</b><span>Pindah dari HP/laptop lain: tempel teks cadangan.</span></div></button>
-    ${OB.rs?`<div class="c"><label style="margin-top:0">Tempel teks cadangan</label><textarea id="o_rs" style="height:110px" placeholder="Tempel di sini"></textarea><div class="er" id="oe">${esc(OB.err||'')}</div><button class="btn p s" data-a="ob-rsgo" style="margin-top:8px">Pulihkan</button></div>`:''}`;
+    <button class="oc" data-a="ob-rs">${ic('copy')}<div><b>Pulihkan dari file cadangan</b><span>Pindah dari HP/laptop lain: tempel teks cadangan.</span></div></button>
+    ${OB.rs?`<div class="c"><label style="margin-top:0">Tempel teks cadangan</label><textarea id="o_rs" style="height:110px" placeholder="Tempel di sini"></textarea><div class="er" id="oe">${esc(OB.err||'')}</div><button class="btn p s" data-a="ob-rsgo" style="margin-top:8px">Pulihkan</button></div>`:''}
+    ${reg?`<div class="nv" style="justify-content:center;margin-top:10px"><button class="bk" data-a="ob-login">Sudah punya usaha? Masuk dengan PIN</button></div>`:''}`;
   }else if(st===1){
     h=`${bars}<h1>Identitas usaha</h1><p class="sub">Tampil di header dan di teks tagihan yang Anda kirim ke outlet.</p>
     <label>Nama usaha</label><input id="o_nama" maxlength="40" value="${v('nama')}" placeholder="mis. Rumah Rempah 77">
@@ -626,23 +634,38 @@ function obRender(){
     h=`${bars}<h1>Produk &amp; harga titip</h1><p class="sub">Opsional. Saat mencatat titipan, nama produk dan harganya terisi otomatis. Bisa diubah di menu Lainnya.</p>
     ${d.prod.map(r=>`<div class="prow"><input maxlength="40" value="${esc(r.n)}" placeholder="mis. Jahe Merah Bubuk"><input type="number" inputmode="numeric" min="0" value="${esc(r.h)}" placeholder="Harga (Rp)"></div>`).join('')}
     <button class="btn s" data-a="ob-addp">${ic('plus')}Tambah produk</button>${nav()}`;
-  }else{
+  }else if(st===4){
     const outs=String(d.out||'').split('\n').map(x=>x.trim()).filter(Boolean),pk=d.prod.filter(r=>r.n.trim());
     h=`${bars}<h1>Preferensi</h1><p class="sub">Tampilan awal aplikasi. Bisa dilihat ulang kapan saja.</p>
     <label>Periode laporan &amp; analisa awal</label><select id="o_per"><option value="bln"${d.per==='bln'?' selected':''}>Bulan ini</option><option value="7"${d.per==='7'?' selected':''}>7 hari terakhir</option><option value="all"${d.per==='all'?' selected':''}>Semua waktu</option></select>
     <label>Halaman yang dibuka pertama</label><select id="o_tab"><option value="home"${d.tab==='home'?' selected':''}>Beranda</option><option value="out"${d.tab==='out'?' selected':''}>Outlet</option><option value="pay"${d.tab==='pay'?' selected':''}>Bayar</option></select>
-    <div class="c sm" style="margin-top:18px"><div><span>Usaha</span><b>${esc(d.nama||'-')}</b></div><div><span>Pemilik</span><b>${esc(d.owner||'-')}</b></div><div><span>Outlet</span><b>${outs.length?esc(outs.join(', ')):'-'}</b></div><div><span>Produk</span><b>${pk.length} produk</b></div></div>${nav(1)}`;
+    <div class="c sm" style="margin-top:18px"><div><span>Usaha</span><b>${esc(d.nama||'-')}</b></div><div><span>Pemilik</span><b>${esc(d.owner||'-')}</b></div><div><span>Outlet</span><b>${outs.length?esc(outs.join(', ')):'-'}</b></div><div><span>Produk</span><b>${pk.length} produk</b></div></div>${nav(!reg)}`;
+  }else{
+    h=`${OB.pend?'':bars}<h1>Buat PIN</h1><p class="sub">${OB.pend?'PIN ini dipakai untuk masuk ke data Anda.':'Langkah terakhir. PIN dipakai untuk masuk ke usaha Anda dari HP atau laptop mana pun.'}</p>
+    <div class="info">${ic('shield')}<div>Data Anda <b>terpisah</b> dari pengguna lain. Ingat PIN ini baik-baik: tanpa PIN, data tidak bisa dibuka.</div></div>
+    <label>PIN <span class="m">(minimal 6 karakter, tanpa spasi)</span></label><input type="password" id="o_pin" autocomplete="new-password" autocapitalize="none" maxlength="32" value="${v('pin')}">
+    <label>Ulangi PIN</label><input type="password" id="o_pin2" autocomplete="new-password" autocapitalize="none" maxlength="32" value="${v('pin2')}">${nav(1)}`;
   }
   $('#app').innerHTML=`<div class="ob">${h}</div>`;window.scrollTo(0,0);
 }
 async function obAct(a){
-  if(!OB)OB={step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home'},err:'',rs:false};
-  obSave();OB.err='';
+  if(a==='ob-reg'){OB=mkOB('reg');obRender();return}
+  if(a==='ob-login'){OB=null;lock();return}
+  if(!OB)OB=mkOB(S?'in':'reg');
+  if(OB.wait)return;
+  obSave();OB.err='';const reg=OB.mode==='reg';
   if(a==='ob-go'){OB.step=1}
   else if(a==='ob-rs'){OB.rs=!OB.rs}
-  else if(a==='ob-demo'){S=demoData();norm();OB=null;per='bln';tab='home';save();msg='Data contoh dimuat. Hapus lewat menu Lainnya bila sudah tidak diperlukan.';render();return}
-  else if(a==='ob-rsgo'){try{const d=JSON.parse($('#o_rs').value);if(!valid(d))throw 0;S=d;S.setup=true;norm();OB=null;save();msg='Data dipulihkan';render();return}catch(x){OB.err='Teks cadangan tidak valid'}}
-  else if(a==='ob-back'){OB.step=Math.max(0,OB.step-1)}
+  else if(a==='ob-demo'){
+    if(reg){OB.pend=demoData();OB.step=5}
+    else{S=demoData();norm();OB=null;per='bln';tab='home';save();msg='Data contoh dimuat. Hapus lewat menu Lainnya bila sudah tidak diperlukan.';render();return}
+  }
+  else if(a==='ob-rsgo'){
+    let d=null;try{d=JSON.parse($('#o_rs').value);if(!valid(d))d=null}catch(x){d=null}
+    if(!d)OB.err='Teks cadangan tidak valid';
+    else{d.setup=true;if(reg){OB.pend=d;OB.step=5;OB.pendRs=1}else{S=d;norm();OB=null;save();msg='Data dipulihkan';render();return}}
+  }
+  else if(a==='ob-back'){if(OB.step===5&&OB.pend){OB.pend=null;OB.pendRs=0;OB.step=0}else OB.step=Math.max(0,OB.step-1)}
   else if(a==='ob-addp'){OB.d.prod.push({n:'',h:''})}
   else if(a==='ob-next'){
     if(OB.step===1&&!OB.d.nama.trim())OB.err='Isi nama usaha dulu';
@@ -650,12 +673,29 @@ async function obAct(a){
     else OB.step++;
   }
   else if(a==='ob-finish'){
-    const d=OB.d,outs=[...new Set(String(d.out||'').split('\n').map(x=>x.trim().slice(0,40)).filter(Boolean))];
-    if(!d.nama.trim()||!outs.length){OB.err='Nama usaha dan minimal satu outlet harus diisi';OB.step=d.nama.trim()?2:1;obRender();return}
-    const pk=d.prod.map(r=>({nama:r.n.trim().slice(0,40),harga:Math.max(0,Math.round(+r.h||0))})).filter(x=>x.nama);
-    S={setup:true,nama:d.nama.trim().slice(0,40),owner:d.owner.trim(),wa:d.wa.trim(),kota:d.kota.trim(),bank:d.bank.trim(),produk:pk,pref:{per:d.per,tab:d.tab},
-       outlets:outs.map(n=>({name:n,items:[]})),pay:[],bahan:[],mov:[],rek:[]};
-    per=d.per;tab=d.tab;OB=null;norm();save();msg='Selamat! Usaha Anda sudah siap. Mulai catat titipan pertama.';render();return;
+    const d=OB.d;let data=OB.pend;
+    if(!data){
+      const outs=[...new Set(String(d.out||'').split('\n').map(x=>x.trim().slice(0,40)).filter(Boolean))];
+      if(!d.nama.trim()||!outs.length){OB.err='Nama usaha dan minimal satu outlet harus diisi';OB.step=d.nama.trim()?2:1;obRender();return}
+      const pk=d.prod.map(r=>({nama:r.n.trim().slice(0,40),harga:Math.max(0,Math.round(+r.h||0))})).filter(x=>x.nama);
+      data={setup:true,nama:d.nama.trim().slice(0,40),owner:d.owner.trim(),wa:d.wa.trim(),kota:d.kota.trim(),bank:d.bank.trim(),produk:pk,pref:{per:d.per,tab:d.tab},
+        outlets:outs.map(n=>({name:n,items:[]})),pay:[],bahan:[],mov:[],rek:[]};
+    }
+    const pf=data.pref||{per:'bln',tab:'home'};
+    if(!reg){S=data;per=pf.per||'bln';tab=pf.tab||'home';OB=null;norm();save();msg='Selamat! Usaha Anda sudah siap. Mulai catat titipan pertama.';render();return}
+    const p=d.pin||'';
+    if(p.length<6||/\s/.test(p)){OB.err='PIN minimal 6 karakter, tanpa spasi';obRender();return}
+    if(p!==d.pin2){OB.err='Ulangi PIN dengan sama persis';obRender();return}
+    OB.wait=true;obRender();
+    let r=null,j=null;
+    try{r=await fetch('/api/data',{method:'POST',cache:'no-store',headers:{'content-type':'application/json',authorization:'Bearer '+p},body:jk({data})});try{j=await r.json()}catch(e){}}catch(e){}
+    if(!OB)return;OB.wait=false;
+    if(r&&r.ok&&j&&Number.isInteger(j.rev)){
+      await sepAccount(p);PIN=p;LS.s('rr77pin',p);
+      msg=OB.pendRs?'Data dipulihkan':data.demo?'Data contoh dimuat. Hapus lewat menu Lainnya bila sudah tidak diperlukan.':'Selamat! Usaha Anda sudah siap. Mulai catat titipan pertama.';
+      S=data;norm();REV=j.rev;setBase(jk(S));dirty=false;LS.d('rr77dirty');window._pf=1;per=pf.per||'bln';tab=pf.tab||'home';OB=null;cache();render();return;
+    }
+    OB.err=(j&&j.error)||'Tidak bisa terhubung ke server. Periksa internet.';
   }
   obRender();
 }
@@ -720,13 +760,31 @@ document.addEventListener('click',async e=>{
   else if(a==='pedit'){const x=S.pay.find(y=>y.id===b.dataset.id);if(x)openP(x.o,false,x.id)}
   else if(a==='addpay')openP(+b.dataset.o||0,b.dataset.f==='1');
   else if(a==='pdel'){if(!confirm('Hapus pembayaran ini? Sisa tagihan akan bertambah lagi.'))return;S.pay=S.pay.filter(x=>x.id!==b.dataset.id);save();msg='Pembayaran dihapus';render()}
-  else if(a==='pin'){const v=$('#pin').value;if(!v)return;PIN=v;LS.s('rr77pin',v);boot()}
+  else if(a==='pin'){const v=$('#pin').value;if(!v)return;await sepAccount(v);PIN=v;LS.s('rr77pin',v);boot()}
+  else if(a==='savefile'){const nm=(S.nama||'KonsiKu').replace(/[^\w\-]+/g,'-').replace(/^-+|-+$/g,'')||'KonsiKu';
+    try{const u=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'})),x=document.createElement('a');x.href=u;x.download=`konsiku-${nm}-${iso(new Date())}.json`;document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);S.backupAt=Date.now();save();msg='File cadangan disimpan (cek folder Unduhan)'}catch(x){msg='Gagal menyimpan file'}render()}
+  else if(a==='chpin'){
+    const o=$('#cp0').value,n=$('#cp1').value,n2=$('#cp2').value,er=t=>{$('#cpe').textContent=t};
+    if(o!==PIN)return er('PIN lama tidak cocok');
+    if(n.length<6||/\s/.test(n))return er('PIN baru minimal 6 karakter, tanpa spasi');
+    if(n===o)return er('PIN baru harus berbeda dari PIN lama');
+    if(n!==n2)return er('Ulangi PIN baru dengan sama persis');
+    if(busy)return er('Sedang menyimpan data, coba lagi sebentar');
+    b.disabled=true;er('Menyimpan…');let r=null,j=null;
+    try{r=await fetch('/api/data',{method:'PATCH',cache:'no-store',headers:{'content-type':'application/json',authorization:'Bearer '+o},body:jk({newPin:n})});try{j=await r.json()}catch(x){}}catch(x){}
+    if(r&&r.ok){PIN=n;LS.s('rr77pin',n);LS.s('rr77aid',await aidOf(n));msg='PIN berhasil diganti. Gunakan PIN baru saat masuk.';render()}
+    else{b.disabled=false;er((j&&j.error)||'Tidak bisa terhubung ke server. Periksa internet.')}}
   else if(a==='retry')boot();
-  else if(a==='logout'){if(!confirm('Keluar dan hapus salinan data di perangkat ini? Data di server tetap aman.'+(dirty?' PERHATIAN: ada perubahan yang belum tersimpan ke server!':'')))return;['rr77pin','rr77v2','rr77rev','rr77dirty','rr77lost','rr77base'].forEach(k=>LS.d(k));PIN='';S=null;dirty=false;lock()}
+  else if(a==='logout'){if(!confirm('Keluar dan hapus salinan data di perangkat ini? Data di server tetap aman.'+(dirty?' PERHATIAN: ada perubahan yang belum tersimpan ke server!':'')))return;['rr77pin','rr77v2','rr77rev','rr77dirty','rr77lost','rr77base','rr77aid','rr77logo','rr77nama'].forEach(k=>LS.d(k));PIN='';S=null;dirty=false;lock()}
   else if(a==='copylost'){msg=(await cp(LS.g('rr77lost')||''))?'Salinan tersalin':'Gagal menyalin';render()}
   else if(a==='droplost'){LS.d('rr77lost');render()}
 });
 document.addEventListener('change',e=>{
+  if(e.target.id==='rsf'){const f=e.target.files[0];e.target.value='';if(!f)return;
+    const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!valid(d))throw 0;
+      if(!confirm('Timpa semua data akun ini dengan isi file "'+f.name+'"? Tidak bisa dibatalkan.')){return}
+      d.setup=true;S=d;norm();save();msg='Data dipulihkan dari file';render()}catch(x){msg='File cadangan tidak valid';render()}};
+    r.onerror=()=>{msg='File tidak bisa dibaca';render()};r.readAsText(f);return}
   if(e.target.id!=='lg')return;const f=e.target.files[0];if(!f)return;
   const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
     const z=256,sc=Math.min(z/im.width,z/im.height,1),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
@@ -742,7 +800,7 @@ async function pull(){
 }
 window.addEventListener('online',push);setInterval(push,20000);setInterval(pull,120000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){push();pull()}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pin'){const b=$('[data-a=pin]');if(b)b.click()}});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.id==='pin'){const b=$('[data-a=pin]');if(b)b.click()}else if(e.target.id==='o_pin2'){const b=$('[data-a=ob-finish]');if(b)b.click()}});
 boot();
 </script>
 </body>
