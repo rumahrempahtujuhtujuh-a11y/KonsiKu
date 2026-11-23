@@ -51,6 +51,10 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 - Validasi saat simpan: nama wajib, harga bilangan bulat 1 sampai 10.000.000, nama tidak boleh kembar (huruf besar/kecil dianggap sama), maksimal 60 produk. Baris yang salah ditandai merah. Baris kosong diabaikan.
 - Mengganti nama produk tidak mengubah titipan lama.
 
+## Persiapan Play Store (v1.9.5)
+- Tambahan: `sw.js` (bisa dibuka tanpa internet), `privacy.html` (kebijakan privasi), `hapus-akun.html` + menu *Lainnya > Hapus akun* (metode `DELETE` di `api/data.js`), `.well-known/assetlinks.json` (isi saat rilis), manifest lengkap.
+- Panduan lengkap dan daftar cek: lihat `PLAYSTORE.md`.
+
 ## Menu Bayar
 - Catat pembayaran dari tiap outlet (tanggal, jumlah, cara bayar, catatan). Tombol *Lunasi* mengisi jumlah sisa tagihan.
 - **Sisa tagihan = total titipan outlet dikurangi total pembayaran**, dihitung otomatis. Menghapus pembayaran mengembalikan sisa tagihan.

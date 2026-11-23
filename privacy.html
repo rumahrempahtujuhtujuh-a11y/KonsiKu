@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0F5C7A">
+<meta name="robots" content="index, follow">
+<title>Kebijakan Privasi | KonsiKu</title>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light dark;--bg:#EEF4F8;--cd:#fff;--tx:#0E2233;--mu:#5B6F7E;--ac:#0F5C7A}
+@media (prefers-color-scheme:dark){:root{--bg:#08121B;--cd:#0F1E2B;--tx:#E6F0F7;--mu:#8CA4B5;--ac:#5CD3DC}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 18px 48px}
+.card{background:var(--cd);border-radius:18px;padding:20px 20px 8px;box-shadow:0 1px 2px rgba(14,34,51,.06)}
+h1{font-size:1.6rem;margin:6px 0 4px}h2{font-size:1.1rem;margin:22px 0 6px;color:var(--ac)}p,li{margin:8px 0}ul{padding-left:20px}
+.m{color:var(--mu);font-size:.9rem}a{color:var(--ac)}
+</style>
+</head>
+<body><main>
+<p><a href="/">&larr; Kembali ke KonsiKu</a></p>
+<div class="card">
+<h1>Kebijakan Privasi KonsiKu</h1>
+<p class="m">Berlaku sejak 24 November 2026</p>
+<p>KonsiKu adalah aplikasi pencatatan titipan (konsinyasi) ke outlet, tagihan, pembayaran, biaya, dan stok bahan untuk usaha kecil. Halaman ini menjelaskan data apa yang kami simpan, untuk apa, dan bagaimana Anda dapat menghapusnya.</p>
+
+<h2>1. Data yang kami simpan</h2>
+<ul>
+<li><b>Data usaha yang Anda isi sendiri</b>: nama usaha, nama pemilik, nomor WhatsApp usaha, kota, rekening/cara bayar, logo, daftar outlet, produk dan harga, titipan (termasuk jumlah terjual dan retur), pembayaran, biaya, serta stok bahan.</li>
+<li><b>PIN</b>: dipakai sebagai kunci masuk. Server <b>tidak menyimpan PIN</b> dalam bentuk asli; PIN diubah menjadi pengenal akun acak satu arah (HMAC-SHA256). Karena itu PIN yang lupa tidak dapat dipulihkan.</li>
+<li><b>Alamat IP</b>: dipakai sementara hanya untuk membatasi percobaan PIN yang berulang dan pendaftaran massal. Disimpan dalam bentuk hash yang dipotong dan otomatis terhapus dalam 10 menit sampai 24 jam.</li>
+</ul>
+<p>Kami <b>tidak</b> meminta atau mengakses kontak, lokasi, kamera, mikrofon, atau berkas lain di perangkat Anda. Logo dan berkas cadangan hanya dibaca bila Anda sendiri memilihnya.</p>
+
+<h2>2. Tempat penyimpanan</h2>
+<ul>
+<li><b>Di server</b>: data usaha disimpan terenkripsi saat transit (HTTPS) pada basis data Upstash Redis yang terhubung ke hosting Vercel. Server menyimpan juga titik pulih harian selama 30 hari untuk mencegah kehilangan data.</li>
+<li><b>Di perangkat Anda</b>: salinan data disimpan di penyimpanan browser/aplikasi agar tetap bisa dibuka saat sinyal buruk. Tombol <i>Keluar</i> menghapus salinan ini.</li>
+</ul>
+
+<h2>3. Penggunaan data</h2>
+<p>Data hanya dipakai untuk menjalankan fitur aplikasi: menampilkan catatan, menghitung tagihan, dan menyusun laporan. Kami tidak menjual data, tidak menampilkan iklan, dan tidak memakai alat pelacak atau analitik pihak ketiga. Data satu pengguna terpisah dari pengguna lain.</p>
+
+<h2>4. Layanan pihak ketiga</h2>
+<ul>
+<li><b>Vercel</b> (hosting) dan <b>Upstash</b> (basis data) memproses data atas nama kami untuk menjalankan aplikasi.</li>
+<li><b>Google Fonts</b>: jenis huruf dimuat dari server Google, sehingga Google dapat menerima alamat IP perangkat Anda. Bila tidak ada internet, huruf cadangan sistem dipakai.</li>
+</ul>
+
+<h2>5. Hak dan kendali Anda</h2>
+<ul>
+<li><b>Melihat dan mengubah</b>: semua data dapat dilihat dan diubah langsung di aplikasi.</li>
+<li><b>Mengunduh salinan</b>: menu <i>Lainnya &gt; Cadangkan data</i> (salin atau simpan ke file).</li>
+<li><b>Menghapus data</b>: menu <i>Lainnya &gt; Hapus akun</i> menghapus akun dan seluruh data Anda dari server, termasuk titik pulih harian, serta dari perangkat. Penghapusan bersifat permanen. Panduan lengkap ada di <a href="/hapus-akun">halaman hapus akun</a>.</li>
+</ul>
+
+<h2>6. Keamanan</h2>
+<p>Komunikasi memakai HTTPS dan akses data dibatasi oleh PIN. Gunakan PIN yang sulit ditebak dan jangan dibagikan. Tidak ada sistem yang aman 100%, namun kami berupaya melindungi data Anda dengan wajar.</p>
+
+<h2>7. Anak-anak</h2>
+<p>KonsiKu ditujukan untuk pelaku usaha dan tidak ditujukan bagi anak di bawah 13 tahun.</p>
+
+<h2>8. Perubahan kebijakan</h2>
+<p>Bila kebijakan ini berubah, versi terbaru akan ditampilkan di halaman ini beserta tanggal berlakunya.</p>
+
+<h2>9. Kontak</h2>
+<p>Pertanyaan atau permintaan terkait data: <b>[ISI EMAIL ANDA]</b></p>
+</div>
+
+</main></body></html>
