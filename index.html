@@ -124,6 +124,22 @@ svg.ch{width:100%;height:auto;stroke:none;display:block}
 .ev{padding:10px 0;border-bottom:1px solid var(--bd);font-size:.92rem;font-weight:600}
 .ev:last-child{border:0}
 .ev span{color:var(--acc);display:block;font-size:.76rem;font-weight:700}
+
+.ob{max-width:640px;margin:0 auto;padding-bottom:30px}
+.ob .pb{display:flex;gap:8px;margin:6px 0 22px}.ob .pb i{flex:1;height:6px;border-radius:6px;background:var(--bd)}.ob .pb i.on{background:var(--acc)}
+.ob h1{font-size:1.55rem;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
+.ob .lg{width:64px;height:64px;border-radius:22px;margin:0 0 14px;background:linear-gradient(135deg,#0B2545,#13A0A8);display:grid;place-items:center;overflow:hidden}
+.ob .lg img{width:100%;height:100%;object-fit:contain}
+.ob .info{display:flex;gap:11px;align-items:flex-start;background:var(--acct);border-radius:18px;padding:13px 14px;margin:14px 0;font-size:.86rem;font-weight:500}
+.ob .info svg{width:22px;height:22px;flex:none;color:var(--acc)}
+.ob .oc{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;background:var(--cd);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px;font:inherit;color:var(--tx);cursor:pointer;box-shadow:var(--shd)}
+.ob .oc svg{width:26px;height:26px;flex:none;color:var(--acc);margin-top:2px}
+.ob .oc b{display:block;font-size:1rem}.ob .oc span{color:var(--mu);font-size:.84rem;font-weight:500}
+.ob .prow{display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:8px}
+.ob .nv{display:flex;justify-content:space-between;align-items:center;margin-top:22px}
+.ob .nv .bk{background:none;border:0;color:var(--acc);font:inherit;font-weight:800;padding:12px 6px;cursor:pointer}
+.ob .er{color:#dc2626;font-size:.84rem;font-weight:600;margin-top:10px;min-height:1em}
+.ob .sm div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:.88rem}.ob .sm div:last-child{border:0}.ob .sm span{color:var(--mu)}.ob .sm b{text-align:right}
 .lk{text-align:center;padding:48px 0 18px}
 .lk .lg{width:76px;height:76px;border-radius:26px;margin:0 auto 16px;background:linear-gradient(135deg,#0B2545,#13A0A8);color:#fff;display:grid;place-items:center;box-shadow:0 18px 30px -14px rgba(15,92,122,.8)}
 .lk .lg svg{width:40px;height:40px}
@@ -171,7 +187,7 @@ nav:empty{display:none}
 <div class="two">
 <div><label>Tanggal</label><input type="date" id="fd"></div>
 <div><label>Jumlah</label><input type="number" id="fq" min="1" inputmode="numeric" placeholder="12"></div>
-<div><label>Produk</label><input id="fp" maxlength="40" placeholder="mis. Roti, Kopi, Kue"></div>
+<div><label>Produk</label><input id="fp" list="prl" maxlength="40" placeholder="mis. Jahe Merah Bubuk"><datalist id="prl"></datalist></div>
 <div><label>Harga satuan (Rp)</label><input type="number" id="fh" inputmode="numeric" placeholder="10000"></div>
 </div>
 <div class="d" id="fe" style="color:#dc2626;margin-top:8px"></div>
@@ -304,12 +320,12 @@ async function boot(){
       S=res.j.data;dirty=false;
       if(L&&!blank(L)&&(ld||lr===0)&&JSON.stringify(L)!==JSON.stringify(S)){LS.s('rr77lost',JSON.stringify(L));msg='Ada data lain di perangkat ini. Salinannya ada di menu Lainnya.'}
     }
-    norm();cache();render();push();
+    norm();if(!window._pf){window._pf=1;if(S.pref){per=S.pref.per||per;tab=S.pref.tab||tab}}cache();render();push();
   }else if(L){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung ke server. Periksa internet.');
 }
-const APP_V='1.5.1',APP_D='23 Nov 2026';
+const APP_V='1.6.0',APP_D='23 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 const tot=o=>act(o).reduce((s,i)=>s+i.qty*i.price,0);
@@ -353,7 +369,7 @@ function report(){
   S.outlets.forEach((o,oi)=>{t+=`\n${String.fromCharCode(65+oi)}. Outlet ${o.name}\n`;sorted(o).forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${i.qty} ${i.prod} Rp. ${rp(i.qty*i.price)}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(tot(o))},-*\n`;if(paid(oi)>0)t+=`Sudah dibayar : Rp.${rp(paid(oi))},-\n*Sisa ${short(o.name)} : Rp.${rp(tot(o)-paid(oi))},-*\n`});
   if(S.outlets.length>1)t+=`\n*Total semua : Rp.${rp(S.outlets.reduce((s,o)=>s+tot(o),0))},-*\n`;
   if(S.outlets.length>1&&S.pay.length)t+=`Sudah dibayar semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+paid(oi),0))},-\n*Sisa semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+tot(o)-paid(oi),0))},-*\n`;
-  return t;
+  return t+payInfo();
 }
 // Tiap pembayaran = satu klaster. Pembayaran dialokasikan ke titipan paling lama lebih dulu (sama seperti label Lunas/Sebagian).
 function clus(oi,cid){
@@ -376,7 +392,8 @@ function rep(){
   ${cl.length?cl.slice(0,40).map(c=>{const p=c.p;return `<div class="c" style="margin-bottom:12px"><div class="row" style="padding-top:0"><div class="who">${av(c.oi,S.outlets[c.oi].name)}<div><b class="serif" style="font-size:1.05rem">Outlet ${esc(S.outlets[c.oi].name)}</b><div class="m">Dibayar ${fd(p.date)} · ${esc(p.m||'Tunai')}${p.ket?' · '+esc(p.ket):''}</div></div></div><div style="text-align:right"><b style="color:var(--gr)">Rp ${rp(p.amt)}</b>${c.cid?'<div><span class="tag">ditutup</span></div>':''}</div></div>${c.L.map(l=>`<div class="row"><div><b>${fd(l.i.date)}</b><div class="m">${l.i.qty} ${esc(l.i.prod)} · Rp ${rp(l.full)}${note(l)}</div></div><div>Rp ${rp(l.u)}</div></div>`).join('')}${c.lebih>0?`<div class="row"><div class="m">Kelebihan bayar</div><div>Rp ${rp(c.lebih)}</div></div>`:''}<div class="acts" style="margin:10px 0 0"><button class="btn s" data-a="copyc" data-id="${p.id}">${ic('copy')}Salin rekap</button>${c.cid?'':`<button class="btn s" data-a="pedit" data-id="${p.id}">Ubah pembayaran</button>`}</div></div>`}).join(''):'<div class="c"><span class="d">Belum ada pembayaran yang masuk. Rekap muncul setelah pembayaran dicatat di menu Bayar.</span></div>'}
   ${OW>0?`<div class="d" style="margin:4px 4px 0">Tagihan berjalan Rp ${rp(OW)} belum masuk rekap karena belum dibayar.</div>`:''}`}
 function more(){return `<h1>Lainnya</h1><p class="sub">Profil usaha, cadangan, dan data</p>
-${LS.g('rr77lost')?`<div class="c" style="margin-bottom:12px"><b>Data yang tertimpa</b><p class="m">Perubahan dari perangkat ini tertimpa data server yang lebih baru. Salinannya masih tersimpan.</p><button class="btn s" data-a="copylost">Salin</button> <button class="btn s" data-a="droplost">Buang</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Penyimpanan</b><p class="m">Data tersimpan di server Vercel dan disalin di perangkat ini. Status: ${esc(stat||'-')}</p><button class="btn s" data-a="logout">${ic('logout')}Keluar</button></div><div class="c" style="margin-bottom:12px"><b>Profil usaha</b><label>Nama usaha</label><input id="nm" value="${esc(S.nama||'KonsiKu')}" maxlength="40"><button class="btn p s" data-a="savenm" style="margin-top:10px">Simpan nama</button><label style="margin-top:18px">Logo</label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="logo has" style="width:64px;height:64px"><img src="${S.logo||DEF_LOGO}" alt="Logo"></div><div><label class="btn s" for="lg" style="margin:0;text-transform:none;letter-spacing:0">${S.logo?'Ganti logo':'Pilih logo'}</label><input type="file" id="lg" accept="image/*" style="display:none">${S.logo?`<button class="btn s" data-a="rmlogo" style="margin-left:8px">${ic('trash')}Hapus</button>`:''}</div></div><p class="m" style="margin:10px 0 0">Logo ini dipakai di semua tampilan: header, layar PIN, ikon tab browser, dan ikon layar utama HP (bila aplikasi dipasang ulang). Hapus untuk kembali ke logo KonsiKu.</p></div>
+${LS.g('rr77lost')?`<div class="c" style="margin-bottom:12px"><b>Data yang tertimpa</b><p class="m">Perubahan dari perangkat ini tertimpa data server yang lebih baru. Salinannya masih tersimpan.</p><button class="btn s" data-a="copylost">Salin</button> <button class="btn s" data-a="droplost">Buang</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Penyimpanan</b><p class="m">Data tersimpan di server Vercel dan disalin di perangkat ini. Status: ${esc(stat||'-')}</p><button class="btn s" data-a="logout">${ic('logout')}Keluar</button></div><div class="c" style="margin-bottom:12px"><b>Profil usaha</b><label>Nama usaha</label><input id="nm" value="${esc(S.nama||'KonsiKu')}" maxlength="40"><label>Nama pemilik / pengelola</label><input id="ow" value="${esc(S.owner||'')}" maxlength="40"><label>No. WhatsApp usaha</label><input id="wa2" inputmode="tel" value="${esc(S.wa||'')}" maxlength="20" placeholder="08xx"><label>Kota</label><input id="kt" value="${esc(S.kota||'')}" maxlength="40"><label>Rekening / cara bayar (ikut di teks tagihan)</label><input id="bk" value="${esc(S.bank||'')}" maxlength="80" placeholder="mis. BSI 7123… a.n. …"><button class="btn p s" data-a="savenm" style="margin-top:10px">Simpan profil</button><label style="margin-top:18px">Logo</label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="logo has" style="width:64px;height:64px"><img src="${S.logo||DEF_LOGO}" alt="Logo"></div><div><label class="btn s" for="lg" style="margin:0;text-transform:none;letter-spacing:0">${S.logo?'Ganti logo':'Pilih logo'}</label><input type="file" id="lg" accept="image/*" style="display:none">${S.logo?`<button class="btn s" data-a="rmlogo" style="margin-left:8px">${ic('trash')}Hapus</button>`:''}</div></div><p class="m" style="margin:10px 0 0">Logo ini dipakai di semua tampilan: header, layar PIN, ikon tab browser, dan ikon layar utama HP (bila aplikasi dipasang ulang). Hapus untuk kembali ke logo KonsiKu.</p></div>
+${S.demo?`<div class="c" style="margin-bottom:12px"><b>Data contoh aktif</b><p class="m">Yang tampil sekarang adalah data fiktif untuk mencoba aplikasi.</p><button class="btn s" data-a="rmdemo">${ic('trash')}Hapus data contoh</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Daftar produk &amp; harga</b><p class="m">Satu produk per baris, format: Nama = harga. Terisi otomatis di form titipan.</p><textarea id="pk" style="height:110px;font:inherit" placeholder="Jahe Merah Bubuk = 15000">${esc(pkText(S.produk))}</textarea><button class="btn p s" data-a="savepk" style="margin-top:10px">Simpan produk</button></div>
 <div class="c"><b>Cadangkan data</b><p class="m">Salin data ke clipboard, lalu simpan di WhatsApp pribadi atau catatan.${S.backupAt?' Terakhir: '+new Date(S.backupAt).toLocaleDateString('id-ID'):''}</p><button class="btn p s" data-a="backup">${ic('copy')}Salin cadangan</button></div>
 <div class="c" style="margin-top:12px"><b>Pulihkan data</b><p class="m">Tempel teks cadangan di bawah.</p><textarea id="rs" style="height:100px" placeholder="Tempel di sini"></textarea><button class="btn s" data-a="restore" style="margin-top:10px">Pulihkan</button></div>
 <div class="c" style="margin-top:12px"><b>Hapus semua data</b><p class="m">Tidak bisa dibatalkan.</p><button class="btn s" data-a="reset">${ic('trash')}Hapus semua</button></div><p class="ver">KonsiKu · versi ${APP_V} (${APP_D})</p>${msg?`<p><b>${msg}</b></p>`:''}`}
@@ -513,7 +530,7 @@ function pay(){
   <div class="sec">Riwayat pembayaran</div><div class="c">${hist.length?hist.map(x=>{const o=S.outlets[x.o]||{name:'?'};return `<div class="row"><div class="who">${av(x.o,o.name)}<div><b>${fd(x.date)}</b><div class="m">${esc(short(o.name))} · ${esc(x.m||'Tunai')}${x.ket?' · '+esc(x.ket):''}</div></div></div><div style="text-align:right">+Rp ${rp(x.amt)}<button class="x" data-a="pedit" data-id="${x.id}" aria-label="Ubah pembayaran">${ic('edit')}</button><button class="x" data-a="pdel" data-id="${x.id}" aria-label="Hapus pembayaran">${ic('trash')}</button></div></div>`}).join(''):'<span class="d">Belum ada pembayaran.</span>'}</div>`+rekHtml();
 }
 function rekHtml(){const R=[...(S.rek||[])].reverse().slice(0,20);return `<div class="sec">Tagihan yang sudah ditutup</div><div class="c">${R.length?R.map(r=>{const o=S.outlets[r.o]||{name:'?'};return `<div class="row"><div><b>Outlet ${esc(short(o.name))}</b><div class="m">${fd(r.from)} s/d ${fd(r.to)} · ${r.por} porsi</div><div class="m">Total Rp ${rp(r.total)} · Dibayar Rp ${rp(r.paid)}${r.sisa>0?' · <b style="color:#dc2626">Sisa Rp '+rp(r.sisa)+'</b>':''}</div></div><div style="display:flex;gap:6px"><button class="btn s" data-a="copyrek" data-id="${r.id}">Salin</button><button class="btn s" data-a="reopen" data-id="${r.id}">Buka lagi</button></div></div>`}).join(''):'<span class="d">Belum ada tagihan yang ditutup.</span>'}</div>`}
-function rtext(r){const o=S.outlets[r.o]||{name:'?',items:[]},it=o.items.filter(i=>i.c===r.id).sort((a,b)=>a.date.localeCompare(b.date));let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n\nOutlet '+o.name+'\n';it.forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${i.qty} ${i.prod} Rp. ${rp(i.qty*i.price)}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(r.total)},-*\nSudah dibayar : Rp.${rp(r.paid)},-\n*Sisa ${short(o.name)} : Rp.${rp(r.sisa)},-*\n`;return t}
+function rtext(r){const o=S.outlets[r.o]||{name:'?',items:[]},it=o.items.filter(i=>i.c===r.id).sort((a,b)=>a.date.localeCompare(b.date));let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n\nOutlet '+o.name+'\n';it.forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${i.qty} ${i.prod} Rp. ${rp(i.qty*i.price)}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(r.total)},-*\nSudah dibayar : Rp.${rp(r.paid)},-\n*Sisa ${short(o.name)} : Rp.${rp(r.sisa)},-*\n`;return t+payInfo()}
 function closeP(oi){const o=S.outlets[oi],a=act(o);if(!a.length){msg='Belum ada titipan yang berjalan';render();return}
   const t=tot(o),p=paid(oi),s=t-p;
   if(!confirm('Tutup tagihan Outlet '+o.name+'?\nTotal Rp '+rp(t)+', dibayar Rp '+rp(p)+', sisa Rp '+rp(Math.max(s,0))+'.\n'+(s>0?'Sisa yang belum dibayar tidak dibawa ke periode baru, tetapi tercatat di riwayat.\n':'')+'Tagihan kembali 0 dan mulai dihitung lagi.'))return;
@@ -542,6 +559,7 @@ function saveP(){
 const V={home,out,pay,bhn:bahan,rep,more};
 function render(){
   if(!S)return;
+  if(needOb()){obRender();return}
   const now=new Date();$('#lo').hidden=false;$('#st').textContent=stat;$('#hd').textContent=`${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}`;
   document.title=S.nama||'KonsiKu';
   if(S.logo)LS.s('rr77logo',S.logo);else LS.d('rr77logo');LS.s('rr77nama',S.nama||'KonsiKu');applyBrand();
@@ -551,18 +569,110 @@ function render(){
   $('#nav').innerHTML=NAV.map(([k,i,l])=>`<button class="${tab===k?'on':''}" data-t="${k}">${ic3(i,TC[k])}${l}${k==='more'&&!S.backupAt?'<span class="dot"></span>':''}</button>`).join('');
 }
 async function cp(t){try{await navigator.clipboard.writeText(t);return 1}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}a.remove();return ok}}
+
+// ===== Pendaftaran pengguna baru (layar sambutan + 4 langkah) =====
+let OB=null;
+const needOb=()=>!!S&&!S.setup&&blank(S);
+const payInfo=()=>S&&S.bank?'\nPembayaran ke : '+S.bank+'\n':'';
+function parsePk(t){return String(t||'').split('\n').map(l=>{const m=l.split('=');const n=m[0].trim().slice(0,40),h=Math.round(+String(m[1]||'').replace(/[^\d]/g,''));return n?{nama:n,harga:h>0?h:0}:null}).filter(Boolean).slice(0,60)}
+function pkText(a){return (a||[]).map(x=>x.nama+(x.harga?' = '+x.harga:'')).join('\n')}
+function demoData(){
+  const dt=n=>iso(new Date(Date.now()-n*864e5)),u=uid;
+  const P={jm:['Jahe Merah Bubuk',15000],kn:['Kunyit Bubuk',12000],sk:['Serai Kering',10000],wu:['Wedang Uwuh',18000]};
+  const it=(n,k,q)=>({date:dt(n),qty:q,prod:P[k][0],price:P[k][1]});
+  const bJ={id:u(),nama:'Jahe merah',sat:'kg',min:5},bK={id:u(),nama:'Kunyit',sat:'kg',min:5},bP={id:u(),nama:'Plastik kemasan',sat:'pack',min:3};
+  return {setup:true,demo:true,nama:'Rempah Contoh',owner:'Bu Ratna',kota:'Sleman',
+    produk:Object.values(P).map(x=>({nama:x[0],harga:x[1]})),pref:{per:'bln',tab:'home'},
+    outlets:[{name:'Toko Maju',items:[it(20,'jm',12),it(20,'kn',10),it(13,'wu',8),it(6,'jm',10),it(6,'sk',15)]},
+             {name:'Warung Berkah',items:[it(18,'kn',12),it(11,'sk',20),it(4,'wu',6)]}],
+    pay:[{id:u(),o:0,amt:300000,date:dt(12),m:'Transfer'},{id:u(),o:1,amt:200000,date:dt(9),m:'Tunai'}],
+    bahan:[bJ,bK,bP],
+    mov:[{id:u(),t:'in',b:bJ.id,date:dt(25),qty:20,total:500000,awal:1,ket:'Stok awal'},{id:u(),t:'in',b:bK.id,date:dt(25),qty:15,total:300000,awal:1,ket:'Stok awal'},{id:u(),t:'in',b:bP.id,date:dt(25),qty:6,total:90000,awal:1,ket:'Stok awal'},
+         {id:u(),t:'out',b:bJ.id,date:dt(15),qty:6,jenis:'Pemakaian produksi',ket:''},{id:u(),t:'out',b:bK.id,date:dt(15),qty:5,jenis:'Pemakaian produksi',ket:''}],
+    rek:[]};
+}
+function obSave(){
+  if(!OB)return;const g=id=>{const e=$('#'+id);return e?e.value:null},d=OB.d;
+  if(OB.step===1){['nama','owner','wa','kota','bank'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
+  if(OB.step===2){const v=g('o_out');if(v!==null)d.out=v}
+  if(OB.step===3){const r=[];document.querySelectorAll('.ob .prow').forEach(x=>{const i=x.querySelectorAll('input');r.push({n:i[0].value,h:i[1].value})});if(r.length)d.prod=r}
+  if(OB.step===4){['per','tab'].forEach(k=>{const v=g('o_'+k);if(v!==null)d[k]=v})}
+}
+function obRender(){
+  S.outlets=S.outlets||[];$('#nav').innerHTML='';$('#lo').hidden=false;applyBrand();
+  const now=new Date();$('#hd').textContent=`${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}`;
+  if(!OB)OB={step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home'},err:'',rs:false};
+  const d=OB.d,v=x=>esc(d[x]||''),st=OB.step;let h='';
+  const bars=`<div class="pb">${[1,2,3,4].map(i=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>`;
+  const nav=(last)=>`<div class="er" id="oe">${esc(OB.err||'')}</div><div class="nv"><button class="bk" data-a="ob-back">Kembali</button><button class="btn p" data-a="${last?'ob-finish':'ob-next'}">${last?'Selesai &amp; mulai pakai':'Lanjut'}</button></div>`;
+  if(st===0){
+    h=`<div class="lg">${'<img src="'+logoSrc()+'" alt="Logo">'}</div><h1>Selamat datang di KonsiKu</h1><p class="sub">Catat titipan ke outlet, tagihan, pembayaran, dan stok bahan usaha Anda langsung dari HP.</p>
+    <div class="info">${ic('shield')}<div>Data tersimpan aman di server dengan PIN Anda dan disalin di perangkat ini. Gunakan <b>Salin cadangan</b> di menu Lainnya secara rutin untuk berjaga-jaga.</div></div>
+    <button class="oc" data-a="ob-go">${ic('edit')}<div><b>Mulai atur usaha saya</b><span>4 langkah singkat: identitas, outlet, produk &amp; harga, preferensi.</span></div></button>
+    <button class="oc" data-a="ob-demo">${ic('box')}<div><b>Coba dulu dengan data contoh</b><span>2 outlet fiktif, 4 produk, titipan, pembayaran, dan stok bahan. Bisa dihapus kapan saja.</span></div></button>
+    <button class="oc" data-a="ob-rs">${ic('copy')}<div><b>Pulihkan dari cadangan</b><span>Pindah dari HP/laptop lain: tempel teks cadangan.</span></div></button>
+    ${OB.rs?`<div class="c"><label style="margin-top:0">Tempel teks cadangan</label><textarea id="o_rs" style="height:110px" placeholder="Tempel di sini"></textarea><div class="er" id="oe">${esc(OB.err||'')}</div><button class="btn p s" data-a="ob-rsgo" style="margin-top:8px">Pulihkan</button></div>`:''}`;
+  }else if(st===1){
+    h=`${bars}<h1>Identitas usaha</h1><p class="sub">Tampil di header dan di teks tagihan yang Anda kirim ke outlet.</p>
+    <label>Nama usaha</label><input id="o_nama" maxlength="40" value="${v('nama')}" placeholder="mis. Rumah Rempah 77">
+    <label>Nama pemilik / pengelola</label><input id="o_owner" maxlength="40" value="${v('owner')}" placeholder="mis. Bu Ratna">
+    <label>No. WhatsApp usaha <span class="m">(opsional)</span></label><input id="o_wa" inputmode="tel" maxlength="20" value="${v('wa')}" placeholder="08xx">
+    <label>Kota <span class="m">(opsional)</span></label><input id="o_kota" maxlength="40" value="${v('kota')}" placeholder="mis. Sleman">
+    <label>Rekening / cara bayar <span class="m">(opsional, ikut tampil di teks tagihan)</span></label><input id="o_bank" maxlength="80" value="${v('bank')}" placeholder="mis. BSI 7123… a.n. …">${nav()}`;
+  }else if(st===2){
+    h=`${bars}<h1>Outlet pertama</h1><p class="sub">Tempat Anda menitipkan produk. Bisa ditambah atau diubah kapan saja di menu Outlet.</p>
+    <label>Nama outlet <span class="m">(satu per baris)</span></label><textarea id="o_out" style="height:130px;font:inherit" placeholder="mis.&#10;Toko Maju&#10;Warung Berkah">${v('out')}</textarea>${nav()}`;
+  }else if(st===3){
+    h=`${bars}<h1>Produk &amp; harga titip</h1><p class="sub">Opsional. Saat mencatat titipan, nama produk dan harganya terisi otomatis. Bisa diubah di menu Lainnya.</p>
+    ${d.prod.map(r=>`<div class="prow"><input maxlength="40" value="${esc(r.n)}" placeholder="mis. Jahe Merah Bubuk"><input type="number" inputmode="numeric" min="0" value="${esc(r.h)}" placeholder="Harga (Rp)"></div>`).join('')}
+    <button class="btn s" data-a="ob-addp">${ic('plus')}Tambah produk</button>${nav()}`;
+  }else{
+    const outs=String(d.out||'').split('\n').map(x=>x.trim()).filter(Boolean),pk=d.prod.filter(r=>r.n.trim());
+    h=`${bars}<h1>Preferensi</h1><p class="sub">Tampilan awal aplikasi. Bisa dilihat ulang kapan saja.</p>
+    <label>Periode laporan &amp; analisa awal</label><select id="o_per"><option value="bln"${d.per==='bln'?' selected':''}>Bulan ini</option><option value="7"${d.per==='7'?' selected':''}>7 hari terakhir</option><option value="all"${d.per==='all'?' selected':''}>Semua waktu</option></select>
+    <label>Halaman yang dibuka pertama</label><select id="o_tab"><option value="home"${d.tab==='home'?' selected':''}>Beranda</option><option value="out"${d.tab==='out'?' selected':''}>Outlet</option><option value="pay"${d.tab==='pay'?' selected':''}>Bayar</option></select>
+    <div class="c sm" style="margin-top:18px"><div><span>Usaha</span><b>${esc(d.nama||'-')}</b></div><div><span>Pemilik</span><b>${esc(d.owner||'-')}</b></div><div><span>Outlet</span><b>${outs.length?esc(outs.join(', ')):'-'}</b></div><div><span>Produk</span><b>${pk.length} produk</b></div></div>${nav(1)}`;
+  }
+  $('#app').innerHTML=`<div class="ob">${h}</div>`;window.scrollTo(0,0);
+}
+async function obAct(a){
+  if(!OB)OB={step:0,d:{nama:'',owner:'',wa:'',kota:'',bank:'',out:'',prod:[{n:'',h:''},{n:'',h:''},{n:'',h:''}],per:'bln',tab:'home'},err:'',rs:false};
+  obSave();OB.err='';
+  if(a==='ob-go'){OB.step=1}
+  else if(a==='ob-rs'){OB.rs=!OB.rs}
+  else if(a==='ob-demo'){S=demoData();norm();OB=null;per='bln';tab='home';save();msg='Data contoh dimuat. Hapus lewat menu Lainnya bila sudah tidak diperlukan.';render();return}
+  else if(a==='ob-rsgo'){try{const d=JSON.parse($('#o_rs').value);if(!valid(d))throw 0;S=d;S.setup=true;norm();OB=null;save();msg='Data dipulihkan';render();return}catch(x){OB.err='Teks cadangan tidak valid'}}
+  else if(a==='ob-back'){OB.step=Math.max(0,OB.step-1)}
+  else if(a==='ob-addp'){OB.d.prod.push({n:'',h:''})}
+  else if(a==='ob-next'){
+    if(OB.step===1&&!OB.d.nama.trim())OB.err='Isi nama usaha dulu';
+    else if(OB.step===2&&!String(OB.d.out||'').split('\n').some(x=>x.trim()))OB.err='Isi minimal satu nama outlet';
+    else OB.step++;
+  }
+  else if(a==='ob-finish'){
+    const d=OB.d,outs=[...new Set(String(d.out||'').split('\n').map(x=>x.trim().slice(0,40)).filter(Boolean))];
+    if(!d.nama.trim()||!outs.length){OB.err='Nama usaha dan minimal satu outlet harus diisi';OB.step=d.nama.trim()?2:1;obRender();return}
+    const pk=d.prod.map(r=>({nama:r.n.trim().slice(0,40),harga:Math.max(0,Math.round(+r.h||0))})).filter(x=>x.nama);
+    S={setup:true,nama:d.nama.trim().slice(0,40),owner:d.owner.trim(),wa:d.wa.trim(),kota:d.kota.trim(),bank:d.bank.trim(),produk:pk,pref:{per:d.per,tab:d.tab},
+       outlets:outs.map(n=>({name:n,items:[]})),pay:[],bahan:[],mov:[],rek:[]};
+    per=d.per;tab=d.tab;OB=null;norm();save();msg='Selamat! Usaha Anda sudah siap. Mulai catat titipan pertama.';render();return;
+  }
+  obRender();
+}
 let ED=null,LASTP={p:'',h:''};
 function openSheet(oi,ix){
   const it=(ix!=null&&S.outlets[oi])?S.outlets[oi].items[ix]:null;ED=it?{o:oi,i:ix}:null;
   $('#fo').innerHTML=S.outlets.map((o,i)=>`<option value="${i}">${esc(o.name)}</option>`).join('');
   $('#fo').value=oi||0;$('#fh2').textContent=it?'Ubah titipan':'Tambah titipan';
   $('#fd').value=it?it.date:iso(new Date());$('#fq').value=it?it.qty:'';$('#fp').value=it?it.prod:LASTP.p;$('#fh').value=it?it.price:LASTP.h;
-  $('#fe').textContent='';$('#sh').classList.add('on');
+  $('#fe').textContent='';$('#prl').innerHTML=(S.produk||[]).map(p=>`<option value="${esc(p.nama)}">`).join('');$('#sh').classList.add('on');
 }
+document.addEventListener('input',e=>{if(e.target.id==='fp'&&!ED&&S){const q=e.target.value.trim().toLowerCase(),p=(S.produk||[]).find(x=>x.nama.toLowerCase()===q&&x.harga>0);if(p)$('#fh').value=p.harga}});
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;msg='';render();window.scrollTo(0,0);return}
   const b=e.target.closest('[data-a]');if(!b){if(e.target.id==='sh')$('#sh').classList.remove('on');if(e.target.id==='sh2')$('#sh2').classList.remove('on');return}
   const a=b.dataset.a;msg='';
+  if(a.startsWith('ob-')){obAct(a);return}
   if(a==='add')openSheet(+b.dataset.o||0);
   else if(a==='edit')openSheet(+b.dataset.o,+b.dataset.i);
   else if(a==='close')$('#sh').classList.remove('on');
@@ -586,7 +696,9 @@ document.addEventListener('click',async e=>{
   else if(a==='del'){if(!confirm('Hapus titipan ini?'))return;S.outlets[b.dataset.o].items.splice(b.dataset.i,1);save();render()}
   else if(a==='copyrep'){msg=(await cp(report()))?'Tagihan tersalin':'Gagal menyalin';render()}
   else if(a==='backup'){msg=(await cp(JSON.stringify(S)))?'Cadangan tersalin':'Gagal menyalin';if(msg==='Cadangan tersalin'){S.backupAt=Date.now();save()}render()}
-  else if(a==='savenm'){S.nama=$('#nm').value.trim()||'KonsiKu';save();msg='Nama usaha disimpan';render()}
+  else if(a==='savenm'){S.nama=$('#nm').value.trim()||'KonsiKu';S.owner=$('#ow').value.trim();S.wa=$('#wa2').value.trim();S.kota=$('#kt').value.trim();S.bank=$('#bk').value.trim();save();msg='Profil usaha disimpan';render()}
+  else if(a==='savepk'){S.produk=parsePk($('#pk').value);save();msg='Daftar produk disimpan';render()}
+  else if(a==='rmdemo'){if(confirm('Hapus semua data contoh? Anda akan kembali ke layar awal.')){S={outlets:[{name:'Contoh',items:[]}],pay:[],bahan:[],mov:[],rek:[]};save();render()}}
   else if(a==='rmlogo'){delete S.logo;save();msg='Logo dihapus';render()}
   else if(a==='bin'||a==='bout'||a==='bnew'||a==='eb'||a==='bop')openG(a==='bin'?'in':a==='bout'?'out':a==='bop'?'opname':'master',b.dataset.id)
   else if(a==='kst')kartu(b.dataset.id)
