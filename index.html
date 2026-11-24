@@ -204,6 +204,11 @@ nav:empty{display:none}
 .lrt .lrd{color:var(--mu);font-weight:500}
 .lrt tfoot td{background:none;border-top:3px solid var(--tx);font-size:.9rem;padding:12px 9px}
 .lrt tfoot .lrok td.n:last-child{color:#15803d}.lrt tfoot .lrno td.n:nth-child(2){color:#dc2626}
+
+.lrlogo{display:flex;align-items:center;gap:12px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd)}
+.lrlogo img{width:52px;height:52px;border-radius:12px;object-fit:contain;background:#fff;flex:none}
+.lrlogo b{display:block;font-size:1.02rem}.lrlogo span{display:block;color:var(--mu);font-size:.78rem;margin-top:2px}
+.btn.wa{background:#16a34a;color:#fff;border-color:#16a34a}
 </style>
 </head>
 <body>
@@ -367,7 +372,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='1.9.8',APP_D='24 Nov 2026';
+const APP_V='1.9.9',APP_D='24 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -474,34 +479,125 @@ function biaya(){
   <div class="sec">Riwayat biaya</div><div class="c">${L.length?L.map(x=>`<div class="row"><div><b>${esc(x.kat)}</b><div class="m">${fd(x.date)}${x.ket?' · '+esc(x.ket):''}</div></div><div style="text-align:right">Rp ${rp(x.amt)}<button class="x" data-a="bedit" data-id="${x.id}" aria-label="Ubah biaya">${ic('edit')}</button><button class="x" data-a="bdel" data-id="${x.id}" aria-label="Hapus biaya">${ic('trash')}</button></div></div>`).join(''):'<span class="d">Belum ada biaya pada periode ini.</span>'}</div>${labaRugi()}`}
 let LRM='';
 const MNm=ym=>ML[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
-// Laporan laba rugi per bulan (default: bulan berjalan). Pendapatan = pembayaran yang masuk; beban = biaya + pembelian bahan; piutang aktif hanya informasi.
-function labaRugi(){
+// Hitung laba rugi satu bulan (default: bulan berjalan). Pendapatan = pembayaran masuk; beban = biaya + pembelian bahan; piutang aktif hanya informasi.
+function lrCalc(){
   const cur=iso(new Date()).slice(0,7),ms=new Set([cur]);
   [...S.pay,...(S.biaya||[]),...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal)].forEach(x=>{if(x.date)ms.add(x.date.slice(0,7))});
-  if(!LRM||!ms.has(LRM))LRM=cur;const ym=LRM,opts=[...ms].sort().reverse();
-  const by=(a,b)=>a.date.localeCompare(b.date);
-  const inc=S.pay.filter(p=>p.date.startsWith(ym)).sort(by);
-  const exp=[...(S.biaya||[]).filter(x=>x.date.startsWith(ym)).map(x=>({date:x.date,l:x.kat+(x.ket?' — '+x.ket:''),v:x.amt})),
-    ...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal&&x.total>0&&x.date.startsWith(ym)).map(x=>{const b=(S.bahan||[]).find(y=>y.id===x.b);return{date:x.date,l:'Pembelian bahan'+(b?' — '+b.nama:''),v:x.total}})].sort(by);
-  const TI=inc.reduce((a,x)=>a+x.amt,0),TE=exp.reduce((a,x)=>a+x.v,0),NET=TI-TE;
-  const pv=S.outlets.map((o,oi)=>({n:o.name,v:Math.max(0,due(oi))})).filter(x=>x.v>0),TP=pv.reduce((a,x)=>a+x.v,0);
+  if(!LRM||!ms.has(LRM))LRM=cur;const ym=LRM,by=(a,b)=>a.date.localeCompare(b.date);
+  const inc=S.pay.filter(p=>p.date.startsWith(ym)).sort(by).map(p=>({date:p.date,l:'Pembayaran — '+((S.outlets[p.o]||{name:'?'}).name)+' — '+sd(p.date)+' — '+(p.m||'Tunai'),v:p.amt}));
+  const exp=[...(S.biaya||[]).filter(x=>x.date.startsWith(ym)).map(x=>({date:x.date,l:x.kat+(x.ket?' — '+x.ket:'')+' — '+sd(x.date),v:x.amt})),
+    ...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal&&x.total>0&&x.date.startsWith(ym)).map(x=>{const b=(S.bahan||[]).find(y=>y.id===x.b);return{date:x.date,l:'Pembelian bahan'+(b?' — '+b.nama:'')+' — '+sd(x.date),v:x.total}})].sort(by);
+  const pv=S.outlets.map((o,oi)=>({l:'Tagihan — '+o.name,v:Math.max(0,due(oi))})).filter(x=>x.v>0);
+  const sm=a=>a.reduce((t,x)=>t+x.v,0),TI=sm(inc),TE=sm(exp);
+  return{cur,ym,opts:[...ms].sort().reverse(),inc,exp,pv,TI,TE,TP:sm(pv),NET:TI-TE}}
+const lrSlug=()=>(S.nama||'KonsiKu').replace(/[^\w]+/g,'-').replace(/^-+|-+$/g,'')||'KonsiKu';
+function labaRugi(){
+  const c=lrCalc(),{ym,cur,inc,exp,pv,TI,TE,TP,NET}=c;
   const R=n=>'Rp '+rp(n),D='<span class="lrd">—</span>';
-  const row=(l,d,k,c)=>`<tr${c?` class="${c}"`:''}><td>${l}</td><td class="n">${d}</td><td class="n">${k}</td></tr>`;
+  const row=(l,d,k,x)=>`<tr${x?` class="${x}"`:''}><td>${l}</td><td class="n">${d}</td><td class="n">${k}</td></tr>`;
   const hd=t=>`<tr class="lrs"><td colspan="3">${t}</td></tr>`;
+  const sub=[S.owner,S.kota,S.wa].filter(Boolean).join(' · ');
   return `<div class="sec">Laporan laba rugi</div><div class="c lr">
-  <div class="lrh"><b>LAPORAN LABA RUGI</b><span>Berdasarkan transaksi yang tercatat dalam sistem</span><select id="lrm" aria-label="Pilih bulan">${opts.map(m=>`<option value="${m}"${m===ym?' selected':''}>${MNm(m)}${m===cur?' (bulan berjalan)':''}</option>`).join('')}</select></div>
+  <div class="lrlogo"><img src="${logoSrc()}" alt=""><div><b>${esc(S.nama||'KonsiKu')}</b>${sub?`<span>${esc(sub)}</span>`:''}</div></div>
+  <div class="lrh"><b>LAPORAN LABA RUGI</b><span>Berdasarkan transaksi yang tercatat dalam sistem</span><select id="lrm" aria-label="Pilih bulan">${c.opts.map(m=>`<option value="${m}"${m===ym?' selected':''}>${MNm(m)}${m===cur?' (bulan berjalan)':''}</option>`).join('')}</select></div>
   <div class="tw"><table class="tb lrt"><thead><tr><th>URAIAN</th><th class="n">DEBET</th><th class="n">KREDIT</th></tr></thead><tbody>
   ${hd('PENDAPATAN')}
-  ${inc.length?inc.map(p=>row(`Pembayaran — ${esc((S.outlets[p.o]||{name:'?'}).name)} — ${sd(p.date)} — ${esc(p.m||'Tunai')}`,D,R(p.amt))).join(''):row('<span class="lrd">Belum ada pembayaran masuk</span>',D,D)}
+  ${inc.length?inc.map(x=>row(esc(x.l),D,R(x.v))).join(''):row('<span class="lrd">Belum ada pembayaran masuk</span>',D,D)}
   ${row('Total Pendapatan',D,R(TI),'lrt2')}
   ${hd('PIUTANG / TAGIHAN AKTIF')}
-  ${pv.map(x=>row(`Tagihan — ${esc(x.n)}`,R(x.v),D)).join('')}
+  ${pv.map(x=>row(esc(x.l),R(x.v),D)).join('')}
   ${row('Total Piutang Aktif',R(TP),D,'lrt2')}
   ${hd('PENGELUARAN')}
-  ${exp.length?exp.map(x=>row(`${esc(x.l)} — ${sd(x.date)}`,R(x.v),D)).join(''):row('<span class="lrd">Belum ada beban</span>',D,D)}
+  ${exp.length?exp.map(x=>row(esc(x.l),R(x.v),D)).join(''):row('<span class="lrd">Belum ada beban</span>',D,D)}
   ${row('Total Beban',R(TE),D,'lrt2')}
   </tbody><tfoot><tr class="${NET>=0?'lrok':'lrno'}"><td>LABA / (RUGI) BERSIH</td><td class="n">${NET<0?R(-NET):D}</td><td class="n">${NET>=0?R(NET):D}</td></tr></tfoot></table></div>
-  <p class="m" style="margin:10px 2px 0">Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan ${MNm(ym)}. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.</p></div>`}
+  <p class="m" style="margin:10px 2px 0">Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan ${MNm(ym)}. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.</p>
+  <div class="acts" style="margin:14px 0 0"><button class="btn p" data-a="lrpdf">${ic('doc')}Export PDF</button><button class="btn wa" data-a="lrwa"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>Kirim ke WA</button></div></div>`}
+
+// ===== PDF laba rugi (tanpa pustaka luar): huruf Helvetica bawaan PDF, logo disisipkan sebagai JPEG =====
+const HW=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+const HB=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+const pdW=(t,b,z)=>{let w=0;for(const ch of t){const c=ch.charCodeAt(0);w+=c>=32&&c<=126?(b?HB:HW)[c-32]:c===0x2014?1000:c===0x2013?556:c===0xb7?278:556}return w*z/1000};
+const pdHex=t=>{let h='';for(const ch of t){let c=ch.charCodeAt(0);if(c===0x2014)c=0x97;else if(c===0x2013)c=0x96;else if(c===0x2018||c===0x2019)c=0x27;else if(c===0x201c||c===0x201d)c=0x22;else if(c>255||c<32)c=63;h+=c.toString(16).padStart(2,'0')}return '<'+h+'>'};
+function pdWrap(t,b,z,mw){const out=[];let cur='';for(const w of String(t).split(' ')){let x=cur?cur+' '+w:w;if(pdW(x,b,z)<=mw){cur=x;continue}if(cur)out.push(cur);cur=w;while(pdW(cur,b,z)>mw&&cur.length>1){let k=cur.length-1;while(k>1&&pdW(cur.slice(0,k),b,z)>mw)k--;out.push(cur.slice(0,k));cur=cur.slice(k)}}if(cur)out.push(cur);return out.length?out:['']}
+function mkPdf(img){
+  const pages=[];let ops=null;const f=n=>(Math.round(n*100)/100).toString();
+  const A={newPage(){ops=[];pages.push(ops)},
+    text(x,y,t,o={}){const z=o.z||9,w=pdW(t,o.b,z);if(o.al==='r')x-=w;else if(o.al==='c')x-=w/2;const c=o.c||[0,0,0];ops.push(`BT ${c.map(f).join(' ')} rg /F${o.b?2:1} ${f(z)} Tf ${f(x)} ${f(842-y)} Td ${pdHex(t)} Tj ET`)},
+    rect(x,y,w,h,c){ops.push(`${c.map(f).join(' ')} rg ${f(x)} ${f(842-y-h)} ${f(w)} ${f(h)} re f`)},
+    line(x1,y,x2,w,c){ops.push(`${(c||[0,0,0]).map(f).join(' ')} RG ${f(w)} w ${f(x1)} ${f(842-y)} m ${f(x2)} ${f(842-y)} l S`)},
+    image(x,y,w,h){ops.push(`q ${f(w)} 0 0 ${f(h)} ${f(x)} ${f(842-y-h)} cm /Im1 Do Q`)},
+    blob(){const parts=[],offs=[];let len=0,id=0;const enc=new TextEncoder();
+      const push=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+      const obj=(n,body,bin)=>{offs[n]=len;push(`${n} 0 obj\n`);if(bin){push(body);push(bin);push('\nendstream\n')}else push(body);push('endobj\n')};
+      const imgId=img?5:0,first=img?6:5,N=pages.length;
+      push('%PDF-1.4\n');
+      obj(1,'<< /Type /Catalog /Pages 2 0 R >>\n');
+      obj(2,`<< /Type /Pages /Kids [${pages.map((_,i)=>`${first+2*i+1} 0 R`).join(' ')}] /Count ${N} >>\n`);
+      obj(3,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\n');
+      obj(4,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\n');
+      if(img)obj(5,`<< /Type /XObject /Subtype /Image /Width ${img.w} /Height ${img.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.u.length} >>\nstream\n`,img.u);
+      pages.forEach((o,i)=>{const c=o.join('\n');obj(first+2*i,`<< /Length ${c.length} >>\nstream\n${c}\nendstream\n`);
+        obj(first+2*i+1,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents ${first+2*i} 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >>${img?' /XObject << /Im1 5 0 R >>':''} >> >>\n`)});
+      const total=first+2*N,xo=len;push(`xref\n0 ${total}\n0000000000 65535 f \n`);
+      for(let n=1;n<total;n++)push(String(offs[n]).padStart(10,'0')+' 00000 n \n');
+      push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xo}\n%%EOF`);
+      return new Blob(parts,{type:'application/pdf'})}};
+  return A}
+function logoJpeg(){return new Promise(res=>{const im=new Image(),t=setTimeout(()=>res(null),4000);
+  im.onload=()=>{clearTimeout(t);try{const c=document.createElement('canvas'),Z=240;c.width=c.height=Z;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,Z,Z);
+    const iw=im.naturalWidth||Z,ih=im.naturalHeight||Z,k=Math.min(Z/iw,Z/ih),w=iw*k,h=ih*k;x.drawImage(im,(Z-w)/2,(Z-h)/2,w,h);
+    const bin=atob(c.toDataURL('image/jpeg',.92).split(',')[1]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);res({u,w:Z,h:Z})}catch(e){res(null)}};
+  im.onerror=()=>{clearTimeout(t);res(null)};im.src=logoSrc()})}
+async function lrPdf(){
+  const c=lrCalc(),img=await logoJpeg(),P=mkPdf(img),L=40,RT=555,DB=430,TW=RT-L,LW=DB-L-58;
+  const G=[.45,.45,.45],R=n=>'Rp '+rp(n);let y=40;
+  P.newPage();
+  if(img)P.image(L,y,50,50);
+  const hx=img?L+62:L,sub=[S.owner,S.kota,S.wa].filter(Boolean).join(' · ');
+  pdWrap(S.nama||'KonsiKu',1,15,RT-hx).slice(0,2).forEach((t,i)=>P.text(hx,y+16+i*17,t,{b:1,z:15}));
+  if(sub)P.text(hx,y+(S.nama&&pdW(S.nama,1,15)>RT-hx?52:34),sub,{z:9,c:G});
+  y=104;P.line(L,y,RT,1,[.8,.8,.8]);
+  P.text(297.5,y+26,'LAPORAN LABA RUGI',{b:1,z:15,al:'c'});
+  P.text(297.5,y+43,'Periode: '+MNm(c.ym),{z:10.5,al:'c'});
+  P.text(297.5,y+57,'Berdasarkan transaksi yang tercatat dalam sistem',{z:8.5,al:'c',c:G});
+  y+=76;P.line(L,y,RT,2);
+  P.text(L+4,y+15,'URAIAN',{b:1,z:9});P.text(DB,y+15,'DEBET',{b:1,z:9,al:'r'});P.text(RT-4,y+15,'KREDIT',{b:1,z:9,al:'r'});
+  y+=22;P.line(L,y,RT,1);
+  const room=h=>{if(y+h>800){P.newPage();y=40}};
+  const sec=t=>{room(40);P.rect(L,y,TW,20,[.94,.95,.96]);P.text(L+4,y+13.5,t,{b:1,z:8.5});y+=20};
+  const row=(l,d,k,b)=>{const ls=pdWrap(l,b,9,LW),h=ls.length*11+9;room(h+20);
+    ls.forEach((t,i)=>P.text(L+4,y+12+i*11,t,{b,z:9}));
+    if(d!=null)P.text(DB,y+12,d,{b,z:9,al:'r'});if(k!=null)P.text(RT-4,y+12,k,{b,z:9,al:'r'});
+    y+=h;P.line(L,y,RT,b?.9:.4,b?[.3,.3,.3]:[.85,.85,.85])};
+  sec('PENDAPATAN');
+  if(c.inc.length)c.inc.forEach(x=>row(x.l,'—',R(x.v)));else row('Belum ada pembayaran masuk','—','—');
+  row('Total Pendapatan','—',R(c.TI),1);
+  sec('PIUTANG / TAGIHAN AKTIF');
+  c.pv.forEach(x=>row(x.l,R(x.v),'—'));row('Total Piutang Aktif',R(c.TP),'—',1);
+  sec('PENGELUARAN');
+  if(c.exp.length)c.exp.forEach(x=>row(x.l,R(x.v),'—'));else row('Belum ada beban','—','—');
+  row('Total Beban',R(c.TE),'—',1);
+  room(80);y+=6;P.line(L,y,RT,2);
+  const col=c.NET>=0?[.08,.5,.24]:[.86,.15,.15];
+  P.text(L+4,y+20,'LABA / (RUGI) BERSIH',{b:1,z:11});
+  if(c.NET<0)P.text(DB,y+20,R(-c.NET),{b:1,z:11,al:'r',c:col});else P.text(RT-4,y+20,R(c.NET),{b:1,z:11,al:'r',c:col});
+  y+=32;P.line(L,y,RT,2);y+=16;
+  pdWrap('Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan '+MNm(c.ym)+'. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.',0,8,TW).forEach((t,i)=>P.text(L,y+i*10,t,{z:8,c:G}));
+  P.text(RT,815,'Dibuat dengan KonsiKu · '+fd(iso(new Date())),{z:8,al:'r',c:G});
+  return P.blob()}
+const lrFile=()=>`Laporan-Laba-Rugi-${lrSlug()}-${LRM}.pdf`;
+function lrText(){const c=lrCalc();return `*LAPORAN LABA RUGI*\n${S.nama||'KonsiKu'}\nPeriode: ${MNm(c.ym)}\n\nPendapatan: Rp ${rp(c.TI)}\nBeban: Rp ${rp(c.TE)}\n*${c.NET>=0?'Laba':'Rugi'} bersih: Rp ${rp(Math.abs(c.NET))}*`}
+function lrSave(blob){const u=URL.createObjectURL(blob),x=document.createElement('a');x.href=u;x.download=lrFile();document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),6000)}
+async function lrAct(a,btn){
+  btn.disabled=true;
+  try{const blob=await lrPdf();
+    if(a==='lrpdf'){lrSave(blob);msg='PDF laporan laba rugi disimpan (cek folder Unduhan)'}
+    else{const f=new File([blob],lrFile(),{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Laporan Laba Rugi',text:lrText()});msg='Laporan dikirim lewat menu bagikan'}catch(e){if(!e||e.name!=='AbortError')throw e}}
+      else{lrSave(blob);window.open('https://wa.me/?text='+encodeURIComponent(lrText()),'_blank','noopener');msg='PDF terunduh. Lampirkan ke chat WhatsApp yang terbuka.'}}
+  }catch(e){msg='Gagal membuat PDF. Coba lagi.'}
+  btn.disabled=false;render()}
 function openB(id){
   const E=id?(S.biaya||[]).find(x=>x.id===id):null;GS={m:'bya',id:E?E.id:'',w:0};
   $('#sh2b').innerHTML=`<h2>${E?'Ubah biaya':'Catat biaya'}</h2><div class="two"><div><label>Tanggal</label><input type="date" id="b1" value="${E?E.date:iso(new Date())}"></div><div><label>Jumlah (Rp)</label><input type="number" id="b2" inputmode="numeric" min="1" value="${E?E.amt:''}"></div></div><label>Kategori</label><select id="b3">${KAT.map(k=>`<option>${k}</option>`).join('')}</select><label>Keterangan</label><input id="b4" maxlength="60" value="${E?esc(E.ket||''):''}" placeholder="mis. Beli gas 3 kg"><div class="d" id="b9" style="color:#dc2626;margin-top:8px"></div><div class="acts" style="margin:14px 0 0"><button class="btn p" data-a="s2save" style="flex:1;justify-content:center">Simpan</button><button class="btn" data-a="s2close">Batal</button></div>`;
@@ -938,6 +1034,7 @@ document.addEventListener('click',async e=>{
   else if(a==='copyall'){msg=(await cp(CL().map(ctext).join('\n----------\n')))?'Semua rekap tersalin':'Gagal menyalin';render()}
   else if(a==='reopen'){const r=(S.rek||[]).find(x=>x.id===b.dataset.id);if(!r)return;if(!confirm('Buka lagi tagihan ini? Titipan dan pembayarannya digabung kembali ke tagihan berjalan outlet tersebut.'))return;S.outlets[r.o].items.forEach(i=>{if(i.c===r.id)delete i.c});S.pay.forEach(x=>{if(x.c===r.id)delete x.c});S.rek=S.rek.filter(x=>x.id!==r.id);save();msg='Tagihan dibuka lagi';render()}
   else if(a==='copyrek'){const r=(S.rek||[]).find(x=>x.id===b.dataset.id);msg=r&&(await cp(rtext(r)))?'Rekap tersalin':'Gagal menyalin';render()}
+  else if(a==='lrpdf'||a==='lrwa'){await lrAct(a,b)}
   else if(a==='addbya')openB();
   else if(a==='bedit')openB(b.dataset.id);
   else if(a==='bdel'){if(!confirm('Hapus catatan biaya ini?'))return;S.biaya=(S.biaya||[]).filter(x=>x.id!==b.dataset.id);save();msg='Biaya dihapus';render()}

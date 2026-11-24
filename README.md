@@ -96,7 +96,14 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 ## Laporan laba rugi (v1.9.8)
 - Di bagian bawah menu **Biaya** ada *Laporan laba rugi* per bulan, default **bulan berjalan** (bisa pilih bulan lain yang punya data). Susunan: Pendapatan (tiap pembayaran masuk, kolom kredit), Piutang / tagihan aktif (informasi, kolom debet), Pengeluaran (biaya dan pembelian bahan, kolom debet), lalu **Laba / (Rugi) bersih** = pendapatan - beban.
 
+## Export PDF dan kirim WhatsApp (v1.9.9)
+- Di bawah Laporan laba rugi: **Export PDF** (mengunduh berkas PDF A4, otomatis lanjut ke halaman berikutnya bila panjang) dan **Kirim ke WA**.
+- Logo dan nama usaha (plus pemilik, kota, nomor WA) tampil di bagian atas laporan, di layar maupun di PDF. Bila belum ada logo, dipakai logo KonsiKu. Logo usaha diatur di menu Lainnya.
+- PDF dibuat langsung di perangkat tanpa pustaka luar (huruf Helvetica bawaan PDF, logo sebagai JPEG), jadi tidak ada data yang dikirim ke pihak lain.
+- *Kirim ke WA*: di HP membuka menu bagikan dengan berkas PDF (pilih WhatsApp). Bila perangkat tidak mendukung berbagi berkas, PDF diunduh dan WhatsApp dibuka dengan ringkasan teks (pendapatan, beban, laba bersih) yang tinggal dikirim; lampirkan PDF secara manual.
+
 ## Versi
+- **1.9.9** (24 Nov 2026): Export PDF dan Kirim ke WA di bawah laporan laba rugi; logo usaha di bagian atas laporan.
 - **1.9.8** (24 Nov 2026): laporan laba rugi bulanan di bawah menu Biaya.
 - **1.9.7** (24 Nov 2026): kata server/Vercel/Upstash dihapus dari teks aplikasi dan halaman privasi/syarat/hapus akun (disebut generik); data contoh memuat retur; panduan akun uji peninjau Google di `PLAYSTORE.md`; `sw.js` mengikuti versi 1.9.7.
 - **1.9.0** (23 Nov 2026): menu Biaya, Laporan berbentuk tabel dengan klaster per pembayaran, hasil akhir di bawah Laporan, info server disembunyikan.
