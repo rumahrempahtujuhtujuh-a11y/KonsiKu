@@ -190,6 +190,20 @@ nav:empty{display:none}
 .ch2{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
 .res{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:14px;margin-top:10px;font-weight:800}
 .res.ok{background:rgba(22,163,74,.12);color:#15803d}.res.no{background:rgba(220,38,38,.1);color:#dc2626}
+
+.lr{padding:14px 12px}
+.lrh{text-align:center;margin-bottom:12px}.lrh b{display:block;font-size:1.15rem;letter-spacing:.02em}.lrh span{display:block;color:var(--mu);font-size:.78rem;margin:3px 0 10px}.lrh select{width:auto;max-width:100%;padding:9px 12px;font-size:.85rem}
+.lrt{border-top:3px solid var(--tx);border-bottom:3px solid var(--tx);table-layout:fixed;min-width:0;width:100%;font-size:.74rem}
+.lrt th:first-child,.lrt td:first-child{width:44%;white-space:normal;word-break:break-word}
+.lrt th.n,.lrt td.n{width:28%;padding-left:4px;padding-right:6px}
+.lrt .lrs td{white-space:normal}
+.lrt thead th{background:none;color:var(--tx);font-size:.74rem;letter-spacing:.03em;border-bottom:1px solid var(--tx)}
+.lrt tbody tr:nth-child(even) td{background:none}
+.lrt .lrs td{background:var(--inp)!important;font-weight:800;font-size:.74rem;letter-spacing:.03em;padding:9px}
+.lrt .lrt2 td{font-weight:800;border-bottom:1px solid var(--bd)}
+.lrt .lrd{color:var(--mu);font-weight:500}
+.lrt tfoot td{background:none;border-top:3px solid var(--tx);font-size:.9rem;padding:12px 9px}
+.lrt tfoot .lrok td.n:last-child{color:#15803d}.lrt tfoot .lrno td.n:nth-child(2){color:#dc2626}
 </style>
 </head>
 <body>
@@ -353,7 +367,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='1.9.7',APP_D='23 Nov 2026';
+const APP_V='1.9.8',APP_D='24 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -457,7 +471,37 @@ function biaya(){
   ${chipsP()}<div class="acts"><button class="btn p" data-a="addbya">${ic('plus')}Catat biaya</button></div>
   ${msg?`<p><b>${msg}</b></p>`:''}
   ${rows.length?`<div class="sec">Per kategori</div><div class="c">${hb(rows)}</div>`:''}
-  <div class="sec">Riwayat biaya</div><div class="c">${L.length?L.map(x=>`<div class="row"><div><b>${esc(x.kat)}</b><div class="m">${fd(x.date)}${x.ket?' · '+esc(x.ket):''}</div></div><div style="text-align:right">Rp ${rp(x.amt)}<button class="x" data-a="bedit" data-id="${x.id}" aria-label="Ubah biaya">${ic('edit')}</button><button class="x" data-a="bdel" data-id="${x.id}" aria-label="Hapus biaya">${ic('trash')}</button></div></div>`).join(''):'<span class="d">Belum ada biaya pada periode ini.</span>'}</div>`}
+  <div class="sec">Riwayat biaya</div><div class="c">${L.length?L.map(x=>`<div class="row"><div><b>${esc(x.kat)}</b><div class="m">${fd(x.date)}${x.ket?' · '+esc(x.ket):''}</div></div><div style="text-align:right">Rp ${rp(x.amt)}<button class="x" data-a="bedit" data-id="${x.id}" aria-label="Ubah biaya">${ic('edit')}</button><button class="x" data-a="bdel" data-id="${x.id}" aria-label="Hapus biaya">${ic('trash')}</button></div></div>`).join(''):'<span class="d">Belum ada biaya pada periode ini.</span>'}</div>${labaRugi()}`}
+let LRM='';
+const MNm=ym=>ML[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
+// Laporan laba rugi per bulan (default: bulan berjalan). Pendapatan = pembayaran yang masuk; beban = biaya + pembelian bahan; piutang aktif hanya informasi.
+function labaRugi(){
+  const cur=iso(new Date()).slice(0,7),ms=new Set([cur]);
+  [...S.pay,...(S.biaya||[]),...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal)].forEach(x=>{if(x.date)ms.add(x.date.slice(0,7))});
+  if(!LRM||!ms.has(LRM))LRM=cur;const ym=LRM,opts=[...ms].sort().reverse();
+  const by=(a,b)=>a.date.localeCompare(b.date);
+  const inc=S.pay.filter(p=>p.date.startsWith(ym)).sort(by);
+  const exp=[...(S.biaya||[]).filter(x=>x.date.startsWith(ym)).map(x=>({date:x.date,l:x.kat+(x.ket?' — '+x.ket:''),v:x.amt})),
+    ...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal&&x.total>0&&x.date.startsWith(ym)).map(x=>{const b=(S.bahan||[]).find(y=>y.id===x.b);return{date:x.date,l:'Pembelian bahan'+(b?' — '+b.nama:''),v:x.total}})].sort(by);
+  const TI=inc.reduce((a,x)=>a+x.amt,0),TE=exp.reduce((a,x)=>a+x.v,0),NET=TI-TE;
+  const pv=S.outlets.map((o,oi)=>({n:o.name,v:Math.max(0,due(oi))})).filter(x=>x.v>0),TP=pv.reduce((a,x)=>a+x.v,0);
+  const R=n=>'Rp '+rp(n),D='<span class="lrd">—</span>';
+  const row=(l,d,k,c)=>`<tr${c?` class="${c}"`:''}><td>${l}</td><td class="n">${d}</td><td class="n">${k}</td></tr>`;
+  const hd=t=>`<tr class="lrs"><td colspan="3">${t}</td></tr>`;
+  return `<div class="sec">Laporan laba rugi</div><div class="c lr">
+  <div class="lrh"><b>LAPORAN LABA RUGI</b><span>Berdasarkan transaksi yang tercatat dalam sistem</span><select id="lrm" aria-label="Pilih bulan">${opts.map(m=>`<option value="${m}"${m===ym?' selected':''}>${MNm(m)}${m===cur?' (bulan berjalan)':''}</option>`).join('')}</select></div>
+  <div class="tw"><table class="tb lrt"><thead><tr><th>URAIAN</th><th class="n">DEBET</th><th class="n">KREDIT</th></tr></thead><tbody>
+  ${hd('PENDAPATAN')}
+  ${inc.length?inc.map(p=>row(`Pembayaran — ${esc((S.outlets[p.o]||{name:'?'}).name)} — ${sd(p.date)} — ${esc(p.m||'Tunai')}`,D,R(p.amt))).join(''):row('<span class="lrd">Belum ada pembayaran masuk</span>',D,D)}
+  ${row('Total Pendapatan',D,R(TI),'lrt2')}
+  ${hd('PIUTANG / TAGIHAN AKTIF')}
+  ${pv.map(x=>row(`Tagihan — ${esc(x.n)}`,R(x.v),D)).join('')}
+  ${row('Total Piutang Aktif',R(TP),D,'lrt2')}
+  ${hd('PENGELUARAN')}
+  ${exp.length?exp.map(x=>row(`${esc(x.l)} — ${sd(x.date)}`,R(x.v),D)).join(''):row('<span class="lrd">Belum ada beban</span>',D,D)}
+  ${row('Total Beban',R(TE),D,'lrt2')}
+  </tbody><tfoot><tr class="${NET>=0?'lrok':'lrno'}"><td>LABA / (RUGI) BERSIH</td><td class="n">${NET<0?R(-NET):D}</td><td class="n">${NET>=0?R(NET):D}</td></tr></tfoot></table></div>
+  <p class="m" style="margin:10px 2px 0">Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan ${MNm(ym)}. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.</p></div>`}
 function openB(id){
   const E=id?(S.biaya||[]).find(x=>x.id===id):null;GS={m:'bya',id:E?E.id:'',w:0};
   $('#sh2b').innerHTML=`<h2>${E?'Ubah biaya':'Catat biaya'}</h2><div class="two"><div><label>Tanggal</label><input type="date" id="b1" value="${E?E.date:iso(new Date())}"></div><div><label>Jumlah (Rp)</label><input type="number" id="b2" inputmode="numeric" min="1" value="${E?E.amt:''}"></div></div><label>Kategori</label><select id="b3">${KAT.map(k=>`<option>${k}</option>`).join('')}</select><label>Keterangan</label><input id="b4" maxlength="60" value="${E?esc(E.ket||''):''}" placeholder="mis. Beli gas 3 kg"><div class="d" id="b9" style="color:#dc2626;margin-top:8px"></div><div class="acts" style="margin:14px 0 0"><button class="btn p" data-a="s2save" style="flex:1;justify-content:center">Simpan</button><button class="btn" data-a="s2close">Batal</button></div>`;
@@ -929,6 +973,7 @@ document.addEventListener('click',async e=>{
   else if(a==='droplost'){LS.d('rr77lost');render()}
 });
 document.addEventListener('change',e=>{
+  if(e.target.id==='lrm'){LRM=e.target.value;render();return}
   if(GS.m==='pay'&&e.target.dataset&&e.target.dataset.pi){const id=e.target.dataset.pi;GS.sel=GS.sel||[];if(e.target.checked){if(!GS.sel.includes(id))GS.sel.push(id)}else GS.sel=GS.sel.filter(x=>x!==id);GS.auto=0;paySel();return}
   if(GS.m==='pay'&&e.target.id==='p1'){GS.sel=[];payList();payPrev();return}
   if(e.target.id==='rsf'){const f=e.target.files[0];e.target.value='';if(!f)return;

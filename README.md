@@ -93,7 +93,11 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Pembelian bahan baku di menu Bahan (selain stok awal) otomatis ikut dihitung sebagai biaya di Laporan, sebagai baris terpisah, sehingga tidak perlu dicatat dua kali.
 - Semua teks di aplikasi tidak lagi menyebut nama server atau penyedia hosting.
 
+## Laporan laba rugi (v1.9.8)
+- Di bagian bawah menu **Biaya** ada *Laporan laba rugi* per bulan, default **bulan berjalan** (bisa pilih bulan lain yang punya data). Susunan: Pendapatan (tiap pembayaran masuk, kolom kredit), Piutang / tagihan aktif (informasi, kolom debet), Pengeluaran (biaya dan pembelian bahan, kolom debet), lalu **Laba / (Rugi) bersih** = pendapatan - beban.
+
 ## Versi
+- **1.9.8** (24 Nov 2026): laporan laba rugi bulanan di bawah menu Biaya.
 - **1.9.7** (24 Nov 2026): kata server/Vercel/Upstash dihapus dari teks aplikasi dan halaman privasi/syarat/hapus akun (disebut generik); data contoh memuat retur; panduan akun uji peninjau Google di `PLAYSTORE.md`; `sw.js` mengikuti versi 1.9.7.
 - **1.9.0** (23 Nov 2026): menu Biaya, Laporan berbentuk tabel dengan klaster per pembayaran, hasil akhir di bawah Laporan, info server disembunyikan.
 - **1.8.0** (23 Nov 2026): menu Lainnya: Ganti PIN, Simpan ke file (.json), Pulihkan dari file.
