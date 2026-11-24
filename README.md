@@ -112,6 +112,8 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Filter periode (Bulan ini / 7 hari / Semua) berlaku untuk tabel stok, belanja, dan riwayat. Data stok tidak berubah, hanya tampilannya.
 
 ## Versi
+- **2.1.2** (24 Nov 2026): ikon 3D di tombol cepat semua halaman: Beranda, Bahan (Belanja, Pakai, Opname, Bahan baru), serta tombol aksi utama di Outlet, Bayar, Biaya, Laporan, dan Lainnya. Tombol hapus, ubah, dan masuk/keluar tetap berikon garis karena belum ada versi 3D-nya.
+- **2.1.1** (24 Nov 2026): Beranda: empat tombol aksi cepat (Titipan, Bayar, Belanja, Tagihan) kini berbentuk kartu horizontal 2×2 dengan ikon di kiri; sebelumnya tertumpuk ke bawah karena nama kelas `.qa` terpakai ganda. Tampilan hero dan kartu ringkasan dibuat lebih premium (aksen emas, gradasi lembut).
 - **2.1.0** (24 Nov 2026): menu Bahan berbentuk tabel, alur stok disederhanakan.
 - **2.0.0** (24 Nov 2026): logo dan ikon KonsiKu baru.
 - **1.9.9** (24 Nov 2026): Export PDF dan Kirim ke WA di bawah laporan laba rugi; logo usaha di bagian atas laporan.
