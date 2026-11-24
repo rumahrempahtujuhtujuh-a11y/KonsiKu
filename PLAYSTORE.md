@@ -1,9 +1,10 @@
 # Panduan rilis KonsiKu ke Google Play Store
 
 ## A. Yang harus Anda isi sebelum deploy (wajib)
-1. `privacy.html` dan `hapus-akun.html`: ganti **[ISI EMAIL ANDA]** dengan email kontak Anda (di kedua berkas).
+1. `privacy.html`, `syarat.html`, dan `hapus-akun.html`: ganti **[ISI EMAIL ANDA]** dengan email kontak Anda (di ketiga berkas).
 2. Deploy ke Vercel (push ke GitHub). Cek alamat ini terbuka:
    - `https://DOMAIN-ANDA/privacy`
+   - `https://DOMAIN-ANDA/syarat`
    - `https://DOMAIN-ANDA/hapus-akun`
    - `https://DOMAIN-ANDA/sw.js`
 3. Setelah membuat aplikasi Android di PWABuilder (langkah B), ganti isi `.well-known/assetlinks.json` dengan nama paket dan fingerprint SHA-256 asli (lihat langkah C), lalu deploy ulang.
@@ -53,9 +54,14 @@ KonsiKu membantu usaha kecil (kue, roti, nasi, kopi, dan produk titipan lain) me
 4. Setiap pembaruan aplikasi web otomatis ikut (tanpa unggah ulang ke Play Store), kecuali Anda mengubah paket Android.
 
 ## G. Daftar cek akhir
-- [ ] Email di privacy.html dan hapus-akun.html sudah diganti
+- [ ] Email di privacy.html, syarat.html, dan hapus-akun.html sudah diganti
 - [ ] assetlinks.json berisi paket dan fingerprint asli
 - [ ] Akun uji untuk peninjau Google sudah dibuat (PIN diberikan di App access)
 - [ ] Screenshot, ikon, feature graphic sudah diunggah
 - [ ] Data safety dan penghapusan akun sudah diisi
 - [ ] Penguji tertutup 12+ orang, 14 hari
+
+## H. Lisensi
+- Play Store tidak mewajibkan lisensi. Play Licensing hanya untuk aplikasi berbayar.
+- Jaga repositori GitHub tetap **privat** bila tidak ingin kode ditiru. Bila dipublikasikan, tambahkan file LICENSE sesuai keinginan.
+- Simpan file .keystore dan password di minimal dua tempat.

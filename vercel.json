@@ -23,7 +23,7 @@
       ]
     },
     {
-      "source": "/((?!privacy|hapus-akun|\\.well-known/).*)",
+      "source": "/((?!privacy|syarat|hapus-akun|\\.well-known/).*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

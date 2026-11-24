@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /privacy
+Allow: /syarat
 Allow: /hapus-akun
 Disallow: /

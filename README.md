@@ -53,6 +53,7 @@ Satu file tampilan (`index.html`) dan satu fungsi server (`api/data.js`), tanpa 
 
 ## Persiapan Play Store (v1.9.5)
 - Tambahan: `sw.js` (bisa dibuka tanpa internet), `privacy.html` (kebijakan privasi), `hapus-akun.html` + menu *Lainnya > Hapus akun* (metode `DELETE` di `api/data.js`), `.well-known/assetlinks.json` (isi saat rilis), manifest lengkap.
+- `syarat.html` (Syarat Penggunaan, v1.9.6), tertaut dari aplikasi dan halaman privasi.
 - Panduan lengkap dan daftar cek: lihat `PLAYSTORE.md`.
 
 ## Menu Bayar
