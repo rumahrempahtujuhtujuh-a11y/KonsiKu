@@ -427,7 +427,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.1.2',APP_D='24 Nov 2026';
+const APP_V='2.1.3',APP_D='24 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -489,10 +489,13 @@ function out(){
 }
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('og'))FOLD[d.dataset.k]=d.open},true);
 function report(){
+  const rows=[];
+  S.outlets.forEach((o,oi)=>{const L=plan(oi).its.filter(t=>t.left>0);if(L.length)rows.push({o,L})});
+  if(!rows.length)return '';
+  const sum=L=>L.reduce((s,x)=>s+x.left,0);
   let t='Bismillah,  list titipan '+(S.nama||'KonsiKu')+' :\n';
-  S.outlets.forEach((o,oi)=>{t+=`\n${String.fromCharCode(65+oi)}. Outlet ${o.name}\n`;sorted(o).forEach((i,n)=>{t+=`${n+1}. ${fd(i.date)} - ${sq(i)} ${i.prod} Rp. ${rp(iv(i))}\n`});t+=`\n*Total ${short(o.name)} : Rp.${rp(tot(o))},-*\n`;if(paid(oi)>0)t+=`Sudah dibayar : Rp.${rp(paid(oi))},-\n*Sisa ${short(o.name)} : Rp.${rp(tot(o)-paid(oi))},-*\n`});
-  if(S.outlets.length>1)t+=`\n*Total semua : Rp.${rp(S.outlets.reduce((s,o)=>s+tot(o),0))},-*\n`;
-  if(S.outlets.length>1&&S.pay.length)t+=`Sudah dibayar semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+paid(oi),0))},-\n*Sisa semua : Rp.${rp(S.outlets.reduce((s,o,oi)=>s+tot(o)-paid(oi),0))},-*\n`;
+  rows.forEach((r,k)=>{t+=`\n${String.fromCharCode(65+k)}. Outlet ${r.o.name}\n`;r.L.forEach((x,n)=>{const i=x.i;t+=`${n+1}. ${fd(i.date)} - ${sq(i)} ${i.prod} Rp. ${rp(x.full)}${x.left<x.full?` (sisa Rp. ${rp(x.left)})`:''}\n`});t+=`\n*Total tagihan ${short(r.o.name)} : Rp.${rp(sum(r.L))},-*\n`});
+  if(rows.length>1)t+=`\n*Total tagihan semua : Rp.${rp(rows.reduce((s,r)=>s+sum(r.L),0))},-*\n`;
   return t+payInfo();
 }
 // Tiap pembayaran = satu klaster. Pembayaran dialokasikan ke titipan paling lama lebih dulu (sama seperti label Lunas/Sebagian).
@@ -1066,7 +1069,7 @@ document.addEventListener('click',async e=>{
   else if(a==='edito'){const o=S.outlets[+b.dataset.o],n=prompt('Nama outlet',o.name);if(n&&n.trim()){o.name=n.trim().slice(0,40);save();msg='Nama outlet diperbarui';render()}}
   else if(a==='addo'){const n=prompt('Nama outlet (mis. Toko Maju)');if(n&&n.trim()){S.outlets.push({name:n.trim().slice(0,40),items:[]});save();render()}}
   else if(a==='del'){if(!confirm('Hapus titipan ini?'))return;S.outlets[b.dataset.o].items.splice(b.dataset.i,1);save();render()}
-  else if(a==='copyrep'){msg=(await cp(report()))?'Tagihan tersalin':'Gagal menyalin';render()}
+  else if(a==='copyrep'){const rt=report();msg=!rt?'Tidak ada tagihan belum lunas, semua titipan sudah lunas':(await cp(rt))?'Tagihan tersalin':'Gagal menyalin';render()}
   else if(a==='backup'){msg=(await cp(JSON.stringify(S)))?'Cadangan tersalin':'Gagal menyalin';if(msg==='Cadangan tersalin'){S.backupAt=Date.now();save()}render()}
   else if(a==='savenm'){S.nama=$('#nm').value.trim()||'KonsiKu';S.owner=$('#ow').value.trim();S.wa=$('#wa2').value.trim();S.kota=$('#kt').value.trim();S.bank=$('#bk').value.trim();save();msg='Profil usaha disimpan';render()}
   else if(a==='savepk')pkSave();
