@@ -1,14 +1,8 @@
-[
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "GANTI.NAMA.PAKET",
-      "sha256_cert_fingerprints": [
-        "GANTI:DENGAN:SHA256:FINGERPRINT"
-      ]
-    }
-  }
-]
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.konsiku.twa",
+        "sha256_cert_fingerprints": ["F1:6C:BE:D7:1E:79:9F:6D:2E:37:EC:E4:DF:A6:0E:A5:08:68:15:7F:C6:66:00:0E:EC:25:B2:36:EA:C0:1B:2B"]
+      }
+    }]
