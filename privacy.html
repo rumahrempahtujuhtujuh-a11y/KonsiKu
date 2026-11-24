@@ -27,14 +27,14 @@ h1{font-size:1.6rem;margin:6px 0 4px}h2{font-size:1.1rem;margin:22px 0 6px;color
 <h2>1. Data yang kami simpan</h2>
 <ul>
 <li><b>Data usaha yang Anda isi sendiri</b>: nama usaha, nama pemilik, nomor WhatsApp usaha, kota, rekening/cara bayar, logo, daftar outlet, produk dan harga, titipan (termasuk jumlah terjual dan retur), pembayaran, biaya, serta stok bahan.</li>
-<li><b>PIN</b>: dipakai sebagai kunci masuk. Server <b>tidak menyimpan PIN</b> dalam bentuk asli; PIN diubah menjadi pengenal akun acak satu arah (HMAC-SHA256). Karena itu PIN yang lupa tidak dapat dipulihkan.</li>
+<li><b>PIN</b>: dipakai sebagai kunci masuk. Sistem kami <b>tidak menyimpan PIN</b> dalam bentuk asli; PIN diubah menjadi pengenal akun acak satu arah (HMAC-SHA256). Karena itu PIN yang lupa tidak dapat dipulihkan.</li>
 <li><b>Alamat IP</b>: dipakai sementara hanya untuk membatasi percobaan PIN yang berulang dan pendaftaran massal. Disimpan dalam bentuk hash yang dipotong dan otomatis terhapus dalam 10 menit sampai 24 jam.</li>
 </ul>
 <p>Kami <b>tidak</b> meminta atau mengakses kontak, lokasi, kamera, mikrofon, atau berkas lain di perangkat Anda. Logo dan berkas cadangan hanya dibaca bila Anda sendiri memilihnya.</p>
 
 <h2>2. Tempat penyimpanan</h2>
 <ul>
-<li><b>Di server</b>: data usaha disimpan terenkripsi saat transit (HTTPS) pada basis data Upstash Redis yang terhubung ke hosting Vercel. Server menyimpan juga titik pulih harian selama 30 hari untuk mencegah kehilangan data.</li>
+<li><b>Di penyimpanan online</b>: data usaha dikirim terenkripsi saat transit (HTTPS) dan disimpan pada basis data cloud milik penyedia layanan terpercaya. Sistem juga menyimpan titik pulih harian selama 30 hari untuk mencegah kehilangan data.</li>
 <li><b>Di perangkat Anda</b>: salinan data disimpan di penyimpanan browser/aplikasi agar tetap bisa dibuka saat sinyal buruk. Tombol <i>Keluar</i> menghapus salinan ini.</li>
 </ul>
 
@@ -43,7 +43,7 @@ h1{font-size:1.6rem;margin:6px 0 4px}h2{font-size:1.1rem;margin:22px 0 6px;color
 
 <h2>4. Layanan pihak ketiga</h2>
 <ul>
-<li><b>Vercel</b> (hosting) dan <b>Upstash</b> (basis data) memproses data atas nama kami untuk menjalankan aplikasi.</li>
+<li><b>Penyedia layanan hosting dan basis data cloud</b> memproses data atas nama kami semata-mata untuk menjalankan aplikasi. Data tidak dijual dan tidak dipakai untuk iklan.</li>
 <li><b>Google Fonts</b>: jenis huruf dimuat dari server Google, sehingga Google dapat menerima alamat IP perangkat Anda. Bila tidak ada internet, huruf cadangan sistem dipakai.</li>
 </ul>
 
@@ -51,7 +51,7 @@ h1{font-size:1.6rem;margin:6px 0 4px}h2{font-size:1.1rem;margin:22px 0 6px;color
 <ul>
 <li><b>Melihat dan mengubah</b>: semua data dapat dilihat dan diubah langsung di aplikasi.</li>
 <li><b>Mengunduh salinan</b>: menu <i>Lainnya &gt; Cadangkan data</i> (salin atau simpan ke file).</li>
-<li><b>Menghapus data</b>: menu <i>Lainnya &gt; Hapus akun</i> menghapus akun dan seluruh data Anda dari server, termasuk titik pulih harian, serta dari perangkat. Penghapusan bersifat permanen. Panduan lengkap ada di <a href="/hapus-akun">halaman hapus akun</a>.</li>
+<li><b>Menghapus data</b>: menu <i>Lainnya &gt; Hapus akun</i> menghapus akun dan seluruh data Anda dari penyimpanan online, termasuk titik pulih harian, serta dari perangkat. Penghapusan bersifat permanen. Panduan lengkap ada di <a href="/hapus-akun">halaman hapus akun</a>.</li>
 </ul>
 
 <h2>6. Keamanan</h2>
@@ -67,7 +67,7 @@ h1{font-size:1.6rem;margin:6px 0 4px}h2{font-size:1.1rem;margin:22px 0 6px;color
 <p>Ketentuan pemakaian aplikasi ada di <a href="/syarat">Syarat Penggunaan</a>.</p>
 
 <h2>10. Kontak</h2>
-<p>Pertanyaan atau permintaan terkait data: <b>[ISI EMAIL ANDA]</b></p>
+<p>Pertanyaan atau permintaan terkait data: <b>Rumahdigital77@gmail.com</b></p>
 </div>
 
 </main></body></html>

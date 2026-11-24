@@ -1,7 +1,7 @@
 # Panduan rilis KonsiKu ke Google Play Store
 
 ## A. Yang harus Anda isi sebelum deploy (wajib)
-1. `privacy.html`, `syarat.html`, dan `hapus-akun.html`: ganti **[ISI EMAIL ANDA]** dengan email kontak Anda (di ketiga berkas).
+1. `privacy.html`, `syarat.html`, dan `hapus-akun.html`: email kontak (Rumahdigital77@gmail.com) sudah terpasang di ketiga berkas; cukup cek tampil benar.
 2. Deploy ke Vercel (push ke GitHub). Cek alamat ini terbuka:
    - `https://DOMAIN-ANDA/privacy`
    - `https://DOMAIN-ANDA/syarat`
@@ -53,8 +53,17 @@ KonsiKu membantu usaha kecil (kue, roti, nasi, kopi, dan produk titipan lain) me
 3. Setelah 14 hari: **Apply for production**, jawab pertanyaan dengan jelas, lalu rilis ke Production.
 4. Setiap pembaruan aplikasi web otomatis ikut (tanpa unggah ulang ke Play Store), kecuali Anda mengubah paket Android.
 
+## F2. Akun uji untuk peninjau Google (wajib bila aplikasi butuh PIN)
+Buat sekali di aplikasi yang sudah ter-deploy, tanpa perlu alat lain:
+1. Buka aplikasi di browser > **Daftar usaha baru** > **Coba dulu dengan data contoh** (sudah berisi 2 outlet, titipan dengan terjual dan retur, pembayaran, stok bahan).
+2. Buat PIN khusus peninjau, mis. `Review2026` (bukan PIN pribadi Anda). Selesai, akun langsung terisi.
+3. Di Play Console > **App content > App access** pilih *All or some functionality is restricted*, lalu isi:
+   - Petunjuk: `Buka aplikasi. Masukkan PIN pada halaman utama, lalu tekan Masuk. Semua fitur terbuka setelah masuk.`
+   - PIN: PIN akun uji tadi. (Kolom username/password: tulis PIN di kolom password, username isi "-".)
+4. Jangan hapus akun uji selama peninjauan. Jangan pakai untuk data asli.
+
 ## G. Daftar cek akhir
-- [ ] Email di privacy.html, syarat.html, dan hapus-akun.html sudah diganti
+- [ ] Email Rumahdigital77@gmail.com sudah terpasang di privacy.html, syarat.html, dan hapus-akun.html
 - [ ] assetlinks.json berisi paket dan fingerprint asli
 - [ ] Akun uji untuk peninjau Google sudah dibuat (PIN diberikan di App access)
 - [ ] Screenshot, ikon, feature graphic sudah diunggah

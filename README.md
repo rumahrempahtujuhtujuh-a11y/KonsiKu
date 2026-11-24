@@ -94,6 +94,7 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Semua teks di aplikasi tidak lagi menyebut nama server atau penyedia hosting.
 
 ## Versi
+- **1.9.7** (24 Nov 2026): kata server/Vercel/Upstash dihapus dari teks aplikasi dan halaman privasi/syarat/hapus akun (disebut generik); data contoh memuat retur; panduan akun uji peninjau Google di `PLAYSTORE.md`; `sw.js` mengikuti versi 1.9.7.
 - **1.9.0** (23 Nov 2026): menu Biaya, Laporan berbentuk tabel dengan klaster per pembayaran, hasil akhir di bawah Laporan, info server disembunyikan.
 - **1.8.0** (23 Nov 2026): menu Lainnya: Ganti PIN, Simpan ke file (.json), Pulihkan dari file.
 - **1.7.0** (23 Nov 2026): halaman utama hanya PIN; pendaftaran pengguna baru lewat layar sambutan 5 langkah (termasuk Buat PIN); data tiap pengguna terpisah di server dan di perangkat; `APP_PIN` tidak lagi wajib (akun lama tetap jalan).
@@ -106,4 +107,4 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - **1.3.0** (20 Nov 2026): ikon menu 3D berwarna tanpa kotak latar (rumah, toko, dompet, kotak, dokumen, roda gigi, keranjang); latar warna menu aktif dihapus, diganti garis penanda kecil di atas ikon.
 - **1.2.0** (20 Nov 2026): ikon menu 3D berwarna (menu bawah, judul halaman, aksi cepat); tombol + Titipan di header dihapus; logo dan nama usaha di layar PIN sama dengan dashboard (disalin di perangkat); ikon aplikasi (layar utama) disamakan dengan logo daun.
 - **1.1.0** (20 Nov 2026): ikon tambah pada tombol Titipan dan Bahan, ikon hapus (tempat sampah) untuk titipan, pembayaran, riwayat bahan, bahan, dan outlet; hapus outlet; nomor versi di Lainnya dan layar PIN; latar logo transparan (putih tepi dibuang saat unggah); ikon masuk dan keluar.
-- Nomor versi ada di `APP_V` dalam `index.html`; naikkan setiap kali ada perubahan.
+- Nomor versi ada di `APP_V` dalam `index.html`; naikkan setiap kali ada perubahan, dan samakan konstanta `V` di `sw.js` (mis. `konsiku-1.9.7`) agar cache lama di HP pengguna terganti.
