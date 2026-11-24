@@ -62,6 +62,9 @@ Buat sekali di aplikasi yang sudah ter-deploy, tanpa perlu alat lain:
    - PIN: PIN akun uji tadi. (Kolom username/password: tulis PIN di kolom password, username isi "-".)
 4. Jangan hapus akun uji selama peninjauan. Jangan pakai untuk data asli.
 
+## F3. Aset logo
+Ikon toko 512 x 512 px untuk Play Console: pakai `icon-512.png` (latar putih, PNG). Logo lengkap: `logo-full.png`.
+
 ## G. Daftar cek akhir
 - [ ] Email Rumahdigital77@gmail.com sudah terpasang di privacy.html, syarat.html, dan hapus-akun.html
 - [ ] assetlinks.json berisi paket dan fingerprint asli

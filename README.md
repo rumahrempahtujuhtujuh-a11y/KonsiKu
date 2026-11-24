@@ -102,7 +102,12 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - PDF dibuat langsung di perangkat tanpa pustaka luar (huruf Helvetica bawaan PDF, logo sebagai JPEG), jadi tidak ada data yang dikirim ke pihak lain.
 - *Kirim ke WA*: di HP membuka menu bagikan dengan berkas PDF (pilih WhatsApp). Bila perangkat tidak mendukung berbagi berkas, PDF diunduh dan WhatsApp dibuka dengan ringkasan teks (pendapatan, beban, laba bersih) yang tinggal dikirim; lampirkan PDF secara manual.
 
+## Logo (v2.0)
+- Logo KonsiKu baru: `logo-full.png` (logo lengkap bertagline, transparan) dipakai di halaman PIN dan layar sambutan; `logo-mark.png` (tas K + lengkung oranye) dipakai di header, pratinjau logo, dan PDF bila usaha belum punya logo sendiri.
+- Ikon aplikasi diganti: `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (tanda dalam zona aman), `apple-touch-icon.png`. Logo usaha yang diunggah pengguna tetap menggantikan logo bawaan.
+
 ## Versi
+- **2.0.0** (24 Nov 2026): logo dan ikon KonsiKu baru.
 - **1.9.9** (24 Nov 2026): Export PDF dan Kirim ke WA di bawah laporan laba rugi; logo usaha di bagian atas laporan.
 - **1.9.8** (24 Nov 2026): laporan laba rugi bulanan di bawah menu Biaya.
 - **1.9.7** (24 Nov 2026): kata server/Vercel/Upstash dihapus dari teks aplikasi dan halaman privasi/syarat/hapus akun (disebut generik); data contoh memuat retur; panduan akun uji peninjau Google di `PLAYSTORE.md`; `sw.js` mengikuti versi 1.9.7.

@@ -1,7 +1,7 @@
 // Service worker KonsiKu: kerangka aplikasi tersimpan agar bisa dibuka tanpa internet.
 // Data usaha (/api/) TIDAK pernah disimpan di sini; aplikasi menyimpannya sendiri.
-const V = 'konsiku-1.9.9';
-const SHELL = ['/', '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
+const V = 'konsiku-2.0.0';
+const SHELL = ['/', '/manifest.webmanifest', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png', '/logo-mark.png', '/logo-full.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
