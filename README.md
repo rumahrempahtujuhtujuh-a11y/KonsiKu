@@ -106,7 +106,13 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Logo KonsiKu baru: `logo-full.png` (logo lengkap bertagline, transparan) dipakai di halaman PIN dan layar sambutan; `logo-mark.png` (tas K + lengkung oranye) dipakai di header, pratinjau logo, dan PDF bila usaha belum punya logo sendiri.
 - Ikon aplikasi diganti: `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (tanda dalam zona aman), `apple-touch-icon.png`. Logo usaha yang diunggah pengguna tetap menggantikan logo bawaan.
 
+## Menu Bahan versi tabel (v2.1)
+- Tampilan baru: kartu nilai stok, empat tombol cepat (Belanja, Pakai, Opname, Bahan baru), lalu tabel *Stok per bahan* (Awal, Masuk, Keluar, Opname, Akhir dengan penanda Aman/Menipis/Habis), tabel *Nilai stok* (harga rata-rata dan total nilai), grafik *Belanja per bahan*, dan tabel *Riwayat transaksi* dengan tombol ubah/hapus per baris.
+- Ketuk baris bahan untuk membuka kartu stok; di sana tersedia Masuk, Keluar, Opname, dan Ubah/Hapus bahan.
+- Filter periode (Bulan ini / 7 hari / Semua) berlaku untuk tabel stok, belanja, dan riwayat. Data stok tidak berubah, hanya tampilannya.
+
 ## Versi
+- **2.1.0** (24 Nov 2026): menu Bahan berbentuk tabel, alur stok disederhanakan.
 - **2.0.0** (24 Nov 2026): logo dan ikon KonsiKu baru.
 - **1.9.9** (24 Nov 2026): Export PDF dan Kirim ke WA di bawah laporan laba rugi; logo usaha di bagian atas laporan.
 - **1.9.8** (24 Nov 2026): laporan laba rugi bulanan di bawah menu Biaya.
