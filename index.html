@@ -264,6 +264,33 @@ nav:empty{display:none}
 .btn.s .i3{width:22px;height:22px;margin:-2px 0 -2px -3px}
 .qas .qa i.i3{background:none;box-shadow:none;border-radius:0;width:46px;height:46px;margin-bottom:2px}
 .qas .qa i.i3 svg{width:100%;height:100%;fill:initial;stroke:none;stroke-width:0}
+/* ===== Beranda v2.1.4: bagian bawah bisa dilipat ===== */
+.grp{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 2px 10px;font-weight:800;font-size:.98rem}
+.grp .chips{margin:0;gap:6px}.grp .chip{padding:6px 11px;font-size:.74rem}
+.grp .gt{display:flex;gap:12px}.grp .gt a{font-size:.76rem;font-weight:700;color:var(--pri);cursor:pointer}
+.fold{margin:0 0 10px;border:1px solid var(--bd);border-radius:18px;background:var(--cd);box-shadow:var(--shd);overflow:hidden}
+.fh{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:none;border:0;font:inherit;color:var(--tx);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fh .ft{display:flex;flex-direction:column;gap:2px;min-width:0}
+.fh .ft b{font-size:.96rem;font-weight:800}
+.fh .ft small{font-size:.72rem;color:var(--mu);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fh .fi{flex:none;width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:var(--pri2);color:var(--pri)}
+.fh .fi svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.fi .fv{transform-origin:12px 12px;transition:transform .22s,opacity .22s}
+.fold.open .fi .fv{transform:scaleY(0);opacity:0}
+.fb{display:grid;grid-template-rows:0fr;transition:grid-template-rows .26s ease}
+.fold.open .fb{grid-template-rows:1fr}
+.fbi{overflow:hidden;min-height:0;padding:0 14px;visibility:hidden}
+.fold.open .fbi{padding:0 14px 14px;visibility:visible}
+.fbi .c{background:transparent;border:0;box-shadow:none;padding:0;border-radius:0}
+.fbi>.c+.c{margin-top:14px}
+.fbi .grid{margin:0}.fbi .grid .c{background:var(--inp);border-radius:14px;padding:12px}
+.ug+.ug{margin-top:6px}
+.ugh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:2px 0 6px;font-weight:800;font-size:.88rem}
+.ugh small{color:var(--mu);font-weight:700;font-size:.72rem;white-space:nowrap}
+.ur{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--bd)}
+.ur .uw{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ur .uw b{font-size:.88rem}
+.ur .ua{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.ur .ua b{font-size:.9rem}
+.ur .x{margin-left:0}
 </style>
 </head>
 <body>
@@ -427,7 +454,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.1.3',APP_D='24 Nov 2026';
+const APP_V='2.1.4',APP_D='24 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -439,6 +466,9 @@ const tot=o=>act(o).reduce((s,i)=>s+iv(i),0);
 const sorted=o=>[...act(o)].sort((a,b)=>a.date.localeCompare(b.date));
 const NAV=[['home','home','Beranda'],['out','store','Outlet'],['pay','wallet','Bayar'],['bhn','box','Bahan'],['biaya','biaya','Biaya'],['rep','doc','Laporan'],['more','sliders','Lainnya']];
 
+const foldSet=()=>{try{return new Set(JSON.parse(LS.g('kkfold')||'[]'))}catch(e){return new Set()}};
+const foldSave=s=>LS.s('kkfold',JSON.stringify([...s]));
+function fold(k,title,sum,body){const o=foldSet().has(k);return `<section class="fold${o?' open':''}" data-k="${k}"><button class="fh" data-a="tog" data-k="${k}" aria-expanded="${o}"><span class="ft"><b>${title}</b>${sum?`<small>${sum}</small>`:''}</span><span class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/><path class="fv" d="M12 6v12"/></svg></span></button><div class="fb"><div class="fbi">${body}</div></div></section>`}
 function home(){
   const now=new Date(),ym=iso(now).slice(0,7),td=iso(now),h=now.getHours();
   const hi=h<11?'pagi':h<15?'siang':h<18?'sore':'malam';
@@ -447,8 +477,9 @@ function home(){
   const days=new Set(mon.map(i=>i.date)).size,tdI=all.filter(i=>i.date===td);
   const mx=all.reduce((a,i)=>!a||sq(i)>sq(a)?i:a,null);
   const PD=S.outlets.reduce((s,o,oi)=>s+paid(oi),0),OW=S.outlets.reduce((s,o,oi)=>s+Math.max(0,due(oi)),0),UN=S.outlets.filter((o,oi)=>due(oi)>0).length;
-  const UNI=[];S.outlets.forEach((o,oi)=>{const A=alloc(oi);sorted(o).forEach(i=>{if(A.get(i)[0]!=='Lunas')UNI.push(i)})});
-  const rec=[...all].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const UL=[];S.outlets.forEach((o,oi)=>{plan(oi).its.filter(t=>t.left>0).reverse().forEach(t=>UL.push({i:t.i,ix:o.items.indexOf(t.i),oi,left:t.left,full:t.full}))});
+  const UNI=UL.map(x=>x.i),ULsum=UL.reduce((s,x)=>s+x.left,0);
+  const recBody=UL.length?S.outlets.map((o,oi)=>{const L=UL.filter(x=>x.oi===oi);if(!L.length)return '';return `<div class="ug"><div class="ugh"><span>Outlet ${esc(o.name)}</span><small>${L.length} titipan · Rp ${rp(L.reduce((s,x)=>s+x.left,0))}</small></div>${L.map(x=>{const part=x.left<x.full;return `<div class="ur"><div class="uw"><b>${fd(x.i.date)}</b><span class="m">${sq(x.i)} ${esc(x.i.prod)} · Rp ${rp(x.i.price)}</span></div><div class="ua"><b>Rp ${rp(x.left)}</b><span class="tag ${part?'w':''}">${part?'Sebagian':'Belum lunas'}</span></div><button class="x" data-a="edit" data-o="${x.oi}" data-i="${x.ix}" aria-label="Ubah titipan">${ic('edit')}</button></div>`}).join('')}</div>`}).join(''):'<div class="m" style="padding:2px 0 4px">Semua titipan sudah lunas.</div>';
   const TN={box:'amber',trend:'leaf',store:'teal',list:'rose',cal:'sky',doc:'leaf',cash:'flame'};
   const card=(n,l,v,d,g)=>`<div class="c k-${TN[n]||'leaf'}"><div class="l">${ic(n)}${l}</div><div class="v ${g===2?'r':g?'g':''}">${v}</div><div class="d">${d}</div></div>`;
   return `<h1>Selamat ${hi}</h1><p class="sub">${DY[now.getDay()]}, ${now.getDate()} ${ML[now.getMonth()]} ${now.getFullYear()}</p>
@@ -463,7 +494,9 @@ function home(){
   ${card('list','Tertinggi',mx?sq(mx)+' porsi':'-',mx?fd(mx.date):'belum ada data')}
    ${card('cal','Titipan '+ML[now.getMonth()],'Rp '+rp(t),por+' porsi · '+days+' hari')}${card('doc','Sudah diterima','Rp '+rp(PD),'periode berjalan',1)}
   </div>
-  <div class="sec">Titipan terbaru</div><div class="c">${rec.length?rec.map(i=>`<div class="row"><div class="who">${av(i.oi,i.o)}<div><b>${fd(i.date)}</b><div class="m">${sq(i)} ${esc(i.prod)}</div></div></div><div style="text-align:right"><b>Rp ${rp(iv(i))}</b><div><span class="tag">${esc(short(i.o))}</span></div></div>${i.c?'':`<button class="x" data-a="edit" data-o="${i.oi}" data-i="${i.ix}" aria-label="Ubah titipan">${ic('edit')}</button>`}</div>`).join(''):'<div class="m">Belum ada titipan.</div>'}</div>`+ana();
+  <div class="grp"><span>Rincian</span><span class="gt"><a data-a="togall" data-v="1">Buka semua</a><a data-a="togall" data-v="0">Tutup semua</a></span></div>
+  ${fold('rec','Titipan terbaru',UL.length?UL.length+' belum lunas · Rp '+rp(ULsum):'Semua sudah lunas',recBody)}
+  ${ana()}`
 }
 // Lipat/buka kelompok: kunci -> true/false (bila belum pernah diubah: terbuka jika masih ada tagihan)
 const FOLD={};
@@ -704,7 +737,7 @@ function ana(){
   const now=new Date(),ym=iso(now).slice(0,7),lm=new Date(now);lm.setDate(lm.getDate()-6);const l7=iso(lm);
   const all=[];S.outlets.forEach(o=>o.items.forEach(i=>all.push({...i,o:o.name})));
   const f=all.filter(i=>per==='bln'?i.date.startsWith(ym):per==='7'?i.date>=l7:true);
-  const head=`<div class="sec">Analisa produk</div><div class="chips">${[['bln','Bulan ini'],['7','7 hari'],['all','Semua']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-a="per" data-p="${k}">${l}</button>`).join('')}</div>`;
+  const head=`<div class="grp"><span>Analisa</span><div class="chips">${[['bln','Bulan ini'],['7','7 hari'],['all','Semua']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-a="per" data-p="${k}">${l}</button>`).join('')}</div></div>`;
   if(!f.length)return head+'<div class="c"><span class="m">Belum ada data pada periode ini.</span></div>';
   const P={};f.forEach(i=>{const k=i.prod.trim().toLowerCase(),p=P[k]||(P[k]={n:i.prod.trim(),q:0,r:0,d:new Set(),lo:1e12,hi:0});p.q+=sq(i);p.r+=iv(i);p.d.add(i.date);p.lo=Math.min(p.lo,i.price);p.hi=Math.max(p.hi,i.price)});
   const pr=Object.values(P).sort((a,b)=>b.r-a.r),TQ=f.reduce((s,i)=>s+sq(i),0),TR=f.reduce((s,i)=>s+iv(i),0);
@@ -716,18 +749,13 @@ function ana(){
   const ord=[1,2,3,4,5,6,0].map(i=>wd[i]);
   const cd=(l,v,d)=>`<div class="c"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
   const outs=S.outlets.map(o=>{const it=o.items.filter(i=>f.some(x=>x===i||(x.o===o.name&&x.date===i.date&&x.qty===i.qty&&x.sold===i.sold&&x.prod===i.prod&&x.price===i.price)));return{l:'Outlet '+o.name,q:it.reduce((s,i)=>s+sq(i),0),r:it.reduce((s,i)=>s+iv(i),0)}});
-  return head+`<div class="grid">${cd('Total porsi',TQ,nd+' hari tercatat')}${cd('Total omzet','Rp '+rp(TR),'periode terpilih')}${cd('Harga rata-rata','Rp '+rp(TR/TQ),'per porsi (tertimbang)')}${cd('Rata-rata/hari',n1(aq)+' porsi','Rp '+rp(TR/nd))}</div>
-  <div class="sec">Tren harian</div><div class="c"><div class="d" style="margin-bottom:6px">Porsi per hari (14 hari terakhir), garis putus = rata-rata</div>${vb(dk.slice(-14).map(k=>({l:pd(k).getDate(),v:D[k].q})),aq)}</div>
-  <div class="sec">Pola hari</div><div class="c"><div class="d" style="margin-bottom:6px">Rata-rata porsi per hari dalam minggu</div>${vb(ord)}</div>
-  <div class="sec">Per produk</div><div class="c"><b>Omzet</b>${hb(pr.map(p=>({l:p.n,v:p.r,t:'Rp '+rp(p.r)+' · '+Math.round(p.r/TR*100)+'%'})))}<div style="margin-top:16px"><b>Jumlah porsi</b></div>${hb(pr.map(p=>({l:p.n,v:p.q,t:p.q+' porsi'})))}<div style="margin-top:16px"><b>Harga rata-rata</b></div>${hb(pr.map(p=>({l:p.n,v:p.r/p.q,t:'Rp '+rp(p.r/p.q)})))}</div>
-  ${pr.map(p=>`<div class="c" style="margin-top:12px"><div class="row" style="padding-top:0"><b class="serif" style="font-size:1.1rem">${esc(p.n)}</b><span class="tag">${Math.round(p.r/TR*100)}% omzet</span></div><div class="ms"><div>Total porsi<b>${p.q}</b></div><div>Omzet<b>Rp ${rp(p.r)}</b></div><div>Harga rata-rata<b>Rp ${rp(p.r/p.q)}</b></div><div>Porsi per hari<b>${n1(p.q/p.d.size)}</b></div></div><div class="d">Rentang harga: ${p.lo===p.hi?'tetap Rp '+rp(p.lo):'Rp '+rp(p.lo)+' sampai Rp '+rp(p.hi)} · terjual di ${p.d.size} hari</div></div>`).join('')}
-  ${S.outlets.length>1?`<div class="sec">Per outlet</div><div class="c">${hb(outs.map(o=>({l:o.l,v:o.r,t:o.q+' porsi · Rp '+rp(o.r)})))}</div>`:''}
-  <div class="sec">Catatan evaluasi</div><div class="c">
+  return head+fold('ana','Analisa produk',TQ+' porsi · Rp '+rp(TR),`<div class="grid">${cd('Total porsi',TQ,nd+' hari tercatat')}${cd('Total omzet','Rp '+rp(TR),'periode terpilih')}${cd('Harga rata-rata','Rp '+rp(TR/TQ),'per porsi (tertimbang)')}${cd('Rata-rata/hari',n1(aq)+' porsi','Rp '+rp(TR/nd))}</div>`)+fold('trn','Tren harian','Porsi per hari, 14 hari terakhir',`<div class="c"><div class="d" style="margin-bottom:6px">Porsi per hari (14 hari terakhir), garis putus = rata-rata</div>${vb(dk.slice(-14).map(k=>({l:pd(k).getDate(),v:D[k].q})),aq)}</div>`)+fold('pol','Pola hari','Paling ramai: '+bw.l,`<div class="c"><div class="d" style="margin-bottom:6px">Rata-rata porsi per hari dalam minggu</div>${vb(ord)}</div>`)+fold('prd','Per produk',pr.length+' produk · terlaris '+esc(pr[0].n),`<div class="c"><b>Omzet</b>${hb(pr.map(p=>({l:p.n,v:p.r,t:'Rp '+rp(p.r)+' · '+Math.round(p.r/TR*100)+'%'})))}<div style="margin-top:16px"><b>Jumlah porsi</b></div>${hb(pr.map(p=>({l:p.n,v:p.q,t:p.q+' porsi'})))}<div style="margin-top:16px"><b>Harga rata-rata</b></div>${hb(pr.map(p=>({l:p.n,v:p.r/p.q,t:'Rp '+rp(p.r/p.q)})))}</div>
+  ${pr.map(p=>`<div class="c" style="margin-top:12px"><div class="row" style="padding-top:0"><b class="serif" style="font-size:1.1rem">${esc(p.n)}</b><span class="tag">${Math.round(p.r/TR*100)}% omzet</span></div><div class="ms"><div>Total porsi<b>${p.q}</b></div><div>Omzet<b>Rp ${rp(p.r)}</b></div><div>Harga rata-rata<b>Rp ${rp(p.r/p.q)}</b></div><div>Porsi per hari<b>${n1(p.q/p.d.size)}</b></div></div><div class="d">Rentang harga: ${p.lo===p.hi?'tetap Rp '+rp(p.lo):'Rp '+rp(p.lo)+' sampai Rp '+rp(p.hi)} · terjual di ${p.d.size} hari</div></div>`).join('')}`)+(S.outlets.length>1?fold('out','Per outlet',S.outlets.length+' outlet',`<div class="c">${hb(outs.map(o=>({l:o.l,v:o.r,t:o.q+' porsi · Rp '+rp(o.r)})))}</div>`):'')+fold('evl','Catatan evaluasi','Terlaris: '+esc(pr[0].n),`<div class="c">
   <div class="ev"><span>Produk terlaris</span>${esc(pr[0].n)} (${pr[0].q} porsi, ${Math.round(pr[0].r/TR*100)}% omzet)</div>
   <div class="ev"><span>Hari tertinggi</span>${fd(hi)} (${D[hi].q} porsi)</div>
   <div class="ev"><span>Hari terendah</span>${fd(lo)} (${D[lo].q} porsi)</div>
   <div class="ev"><span>Hari paling ramai (rata-rata)</span>${bw.l} (${n1(bw.v)} porsi)</div>
-  <div class="ev"><span>Konsistensi harga</span>${pr.every(p=>p.lo===p.hi)?'Harga satuan stabil di semua produk':pr.filter(p=>p.lo!==p.hi).map(p=>esc(p.n)).join(', ')+' memiliki harga yang berubah-ubah'}</div></div>`;
+  <div class="ev"><span>Konsistensi harga</span>${pr.every(p=>p.lo===p.hi)?'Harga satuan stabil di semua produk':pr.filter(p=>p.lo!==p.hi).map(p=>esc(p.n)).join(', ')+' memiliki harga yang berubah-ubah'}</div></div>`);
 }
 function unwhite(cx,w,h){try{const d=cx.getImageData(0,0,w,h),a=d.data,seen=new Uint8Array(w*h),st=[];const wh=i=>a[i*4+3]<8||(a[i*4]>232&&a[i*4+1]>232&&a[i*4+2]>232);
 const push=i=>{if(!seen[i]&&wh(i)){seen[i]=1;st.push(i)}};
@@ -1044,6 +1072,8 @@ document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-t]');if(t){tab=t.dataset.t;msg='';PKD=null;render();window.scrollTo(0,0);return}
   const b=e.target.closest('[data-a]');if(!b){if(e.target.id==='sh')$('#sh').classList.remove('on');if(e.target.id==='sh2')$('#sh2').classList.remove('on');return}
   const a=b.dataset.a;msg='';
+  if(a==='tog'){const k=b.dataset.k,st=foldSet(),on=!st.has(k);on?st.add(k):st.delete(k);foldSave(st);b.closest('.fold').classList.toggle('open',on);b.setAttribute('aria-expanded',on);return}
+  if(a==='togall'){const on=b.dataset.v==='1',st=new Set();document.querySelectorAll('.fold').forEach(x=>{if(on)st.add(x.dataset.k);x.classList.toggle('open',on);x.querySelector('.fh').setAttribute('aria-expanded',on)});foldSave(st);return}
   if(a.startsWith('ob-')){obAct(a);return}
   if(a==='add')openSheet(+b.dataset.o||0);
   else if(a==='edit')openSheet(+b.dataset.o,+b.dataset.i);
