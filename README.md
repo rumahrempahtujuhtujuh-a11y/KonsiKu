@@ -126,6 +126,7 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Berlaku juga di PDF, teks WhatsApp, dan rekap bahan. Menu Laporan tetap berbasis kas dan diberi catatan.
 
 ## Versi
+- **2.1.9** (26 Nov 2026): menu Lainnya dirapikan: profil usaha ringkas (isian 2 kolom, logo dan tombol Simpan sebaris), lalu empat bagian yang bisa dibuka/ditutup (Daftar produk, Data & cadangan, Keamanan akun) dan baris Penyimpanan/Keluar; tanggal rilis dihapus dari tulisan versi; logo KonsiKu kecil di footer.
 - **2.1.8** (26 Nov 2026): kolom Nilai Rp di riwayat Inventori tidak lagi menempel ke tombol ubah; label tabel Perhitungan persediaan tidak terlipat; catatan rumus di PDF laba rugi pindah ke halaman baru bila tidak muat.
 - **2.1.7** (26 Nov 2026): menu Inventori dan Biaya disesuaikan aturan akuntansi persediaan; Laba Rugi memakai format laba kotor dan laba bersih, dengan pilihan basis akrual atau kas.
 - **2.1.6** (26 Nov 2026): menu Bahan menjadi Inventori; belanja bahan tidak lagi langsung menjadi biaya, beban dihitung saat bahan dipakai.
