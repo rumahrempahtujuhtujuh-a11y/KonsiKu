@@ -133,7 +133,14 @@ Tampilan mengikuti **lebar layar** (viewport), bukan jenis perangkat:
 - Mengecilkan jendela laptop otomatis kembali ke tampilan sempit/mobile.
 - Perbaikan kecil: nominal Laba Bersih di tabel Laba Rugi tidak lagi terpotong di sisi kanan pada angka jutaan.
 
+## Menu Bayar versi tabel (v2.3.0)
+- **Status tagihan per outlet**: tabel Titipan / Dibayar / Sisa per outlet dengan status, bar progres (%), tombol Tutup tagihan, Bayar, dan Lunasi, serta baris Total.
+- **Per cara bayar**: tabel Tunai / Transfer / QRIS (jumlah transaksi, nominal, persentase).
+- **Riwayat pembayaran** dan **Tagihan yang sudah ditutup** juga berbentuk tabel (Salin dan Buka lagi di tiap baris). Hero menampilkan % terbayar.
+- Formulir pembayaran (pilih outlet, centang titipan yang dibayar) tidak diubah.
+
 ## Versi
+- **2.3.0** (27 Nov 2026): menu Bayar berbentuk tabel; formulir pembayaran tetap.
 - **2.2.1** (26 Nov 2026): tampilan laptop mengikuti lebar layar sehingga mode "Situs desktop" di HP juga memenuhi layar; HP biasa tetap mobile.
 - **2.2.0** (26 Nov 2026): tampilan laptop (sidebar, lebar penuh, modal); nominal laba bersih tidak terpotong.
 - **2.1.9** (26 Nov 2026): menu Lainnya dirapikan: profil usaha ringkas (isian 2 kolom, logo dan tombol Simpan sebaris), lalu empat bagian yang bisa dibuka/ditutup (Daftar produk, Data & cadangan, Keamanan akun) dan baris Penyimpanan/Keluar; tanggal rilis dihapus dari tulisan versi; logo KonsiKu kecil di footer.
