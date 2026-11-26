@@ -306,6 +306,48 @@ nav:empty{display:none}
 .kdb{display:flex;gap:10px}.kdb .btn{flex:1;justify-content:center}
 .kdb .btn.p.dg{background:linear-gradient(135deg,#E5484D,#FF6B6B);box-shadow:0 10px 18px -10px rgba(229,72,77,.8)}
 @keyframes kdf{from{opacity:0}}@keyframes kdp{from{opacity:0;transform:scale(.92)}}
+
+/* ===== Perbaikan: nominal laba bersih tidak terpotong ===== */
+.lrt th:first-child,.lrt td:first-child{width:38%}
+.lrt th.n,.lrt td.n{width:31%}
+.lrt tfoot td.n{font-size:.85rem;white-space:nowrap;padding-right:6px}
+/* ===== Tampilan laptop / layar lebar =====
+   Hanya aktif pada perangkat dengan mouse/trackpad (pointer halus) dan layar lebar.
+   HP dan tablet sentuh, juga "situs desktop" di HP, tetap memakai tampilan mobile di atas. */
+@media (min-width:768px) and (hover:hover) and (pointer:fine){
+  main{max-width:920px}
+  header{padding-left:max(18px,calc((100% - 920px)/2 + 18px));padding-right:max(18px,calc((100% - 920px)/2 + 18px))}
+  nav{max-width:896px}
+  .sh{align-items:center}
+  .sh>div{max-width:560px;border-radius:26px;max-height:88%;padding-bottom:20px}
+  .qh{grid-template-columns:repeat(4,1fr)}
+  .qh button,.qa,.chip,.btn{transition:transform .12s ease,box-shadow .12s ease,background-color .12s ease}
+  .qh button:hover,.qa:hover{transform:translateY(-2px)}
+  .btn:hover{filter:brightness(1.04)}
+  .bt tbody tr[data-a]:hover td{background:var(--acct)}
+}
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+  :root{--sbw:236px}
+  header{margin-left:var(--sbw);padding:18px 40px 26px;border-radius:0 0 26px 26px}
+  header .t b{font-size:1.15rem}
+  main{max-width:none;margin:0 0 0 var(--sbw);padding:26px max(40px,calc((100% - 1160px)/2)) 56px}
+  nav{left:0;right:auto;top:0;bottom:0;width:var(--sbw);max-width:none;margin:0;border-radius:0 28px 28px 0;border-left:0;flex-direction:column;justify-content:flex-start;gap:4px;padding:16px 12px;overflow:auto;box-shadow:12px 0 34px -22px rgba(14,34,51,.4)}
+  nav::before{content:"";display:block;flex:none;height:86px;margin:2px 6px 14px;background:url(/logo-full.png) center/contain no-repeat}
+  nav button{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;font-size:.92rem;padding:7px 12px;border-radius:16px;text-align:left}
+  nav button .i3{width:36px;height:36px;margin:0}
+  nav button.on .i3{transform:none}
+  nav button.on{background:var(--kb)}
+  nav button:hover{background:var(--kb)}
+  nav button.on::before{top:50%;left:0;transform:translateY(-50%);width:4px;height:24px;border-radius:0 4px 4px 0}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .hero{padding:26px 28px 24px}
+  .hv{font-size:2.8rem}
+  .sec{font-size:1.1rem}
+  /* halaman masuk & pendaftaran (tanpa menu): di tengah layar */
+  nav:empty{display:none}
+  body:has(nav:empty) header{margin-left:0}
+  body:has(nav:empty) main{margin:0 auto;max-width:720px;padding:30px 24px 56px}
+}
 </style>
 </head>
 <body>
@@ -470,7 +512,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.1.9',APP_D='26 Nov 2026';
+const APP_V='2.2.0',APP_D='26 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
