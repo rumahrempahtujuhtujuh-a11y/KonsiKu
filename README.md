@@ -117,7 +117,16 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Pakai (produksi) = beban bahan terpakai; Rusak / terbuang = beban bahan rusak; Opname stok kurang = beban selisih, stok lebih mengurangi beban; Stok awal = persediaan awal, bukan beban.
 - Berlaku di Laba Rugi (menu Biaya), PDF laba rugi, dan menu Laporan. Nilai stok dan harga rata-rata di Inventori ikut memakai rata-rata bergerak.
 
+## Aturan akuntansi Inventori, Biaya, dan Laba Rugi (v2.1.7)
+- **Persediaan (Inventori)**: Persediaan awal + Pembelian − Bahan terpakai − Rusak ± Selisih opname = Persediaan akhir (dalam Rp). Tabel *Perhitungan persediaan* tampil di menu Inventori; peringatan muncul bila nilai stok tidak sama dengan persediaan akhir (mis. stok Minus karena pemakaian melebihi stok).
+- Kolom **Nilai Rp** di riwayat transaksi kini terisi untuk Pakai, Rusak, dan Opname (dinilai harga rata-rata bergerak), tidak lagi kosong. Status baru **Minus** untuk stok di bawah nol.
+- **Biaya**: kartu atas menampilkan *Total beban usaha* = Biaya operasional + Bahan baku terpakai (+ rusak ± selisih opname). Rincian per kategori memuat baris otomatis dari Inventori. Total ini sama dengan Total Beban di Laba Rugi.
+- **Laba Rugi** (format standar): Pendapatan − Beban pokok bahan baku = **Laba kotor**; Laba kotor − Beban operasional = **Laba bersih**. Beban pokok bahan baku = Persediaan awal + Pembelian − Persediaan akhir.
+- **Dasar pendapatan** bisa dipilih: *Akrual* (bawaan; penjualan titipan = jumlah terjual × harga pada bulan itu, sudah dibayar atau belum, sehingga sepadan dengan bahan yang dipakai) atau *Kas* (pembayaran yang masuk). Pilihan tersimpan di data (`lrBasis`). Piutang aktif hanya informasi di catatan laporan.
+- Berlaku juga di PDF, teks WhatsApp, dan rekap bahan. Menu Laporan tetap berbasis kas dan diberi catatan.
+
 ## Versi
+- **2.1.7** (26 Nov 2026): menu Inventori dan Biaya disesuaikan aturan akuntansi persediaan; Laba Rugi memakai format laba kotor dan laba bersih, dengan pilihan basis akrual atau kas.
 - **2.1.6** (26 Nov 2026): menu Bahan menjadi Inventori; belanja bahan tidak lagi langsung menjadi biaya, beban dihitung saat bahan dipakai.
 - **2.1.5** (25 Nov 2026): semua kotak konfirmasi dan isian bawaan browser (yang judulnya memuat alamat web, mis. "konsiku.vercel.app says") diganti dialog di dalam aplikasi, tanpa alamat web. Kolom PIN tidak lagi bertipe password sehingga Google/Samsung tidak memunculkan kotak "Use saved password?" atau "Save password?"; PIN tetap tampil sebagai titik-titik.
 - **2.1.4** (24 Nov 2026): Beranda dirapikan: Titipan terbaru, Analisa produk, Tren harian, Pola hari, Per produk, Per outlet, dan Catatan evaluasi menjadi bagian yang bisa dibuka/ditutup (tombol +/− di tiap judul, "Buka semua"/"Tutup semua"); pilihan tersimpan per perangkat dan awalnya semua tertutup. Titipan terbaru kini memuat semua titipan yang belum lunas (dikelompokkan per outlet, terbaru di atas, titipan yang dibayar sebagian menampilkan sisanya). Hitungan "titipan" di kartu tagihan memakai daftar yang sama.

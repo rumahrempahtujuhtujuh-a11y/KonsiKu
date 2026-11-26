@@ -468,7 +468,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.1.6',APP_D='26 Nov 2026';
+const APP_V='2.1.7',APP_D='26 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -590,54 +590,66 @@ const sd=x=>{const t=pd(x);return t.getDate()+' '+MS[t.getMonth()]};
 const chipsP=()=>`<div class="chips">${[['bln','Bulan ini'],['7','7 hari'],['all','Semua']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-a="per" data-p="${k}">${l}</button>`).join('')}</div>`;
 const biayaP=()=>(S.biaya||[]).filter(x=>inPer(x.date));
 function biaya(){
-  const L=[...biayaP()].sort((a,b)=>b.date.localeCompare(a.date)),T=L.reduce((a,x)=>a+x.amt,0),K={};
+  const L=[...biayaP()].sort((a,b)=>b.date.localeCompare(a.date)),TO=L.reduce((a,x)=>a+x.amt,0),K={};
+  const PI=invPer(pstart(),'9999-12-31'),ad=PI.adjM-PI.adjP,TB=PI.use+PI.waste+ad,T=TO+TB;
   L.forEach(x=>{K[x.kat]=(K[x.kat]||0)+x.amt});
-  const rows=Object.entries(K).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({l:k,v,t:'Rp '+rp(v)+' · '+Math.round(v/T*100)+'%'}));
-  return `<h1>Biaya</h1><p class="sub">Catat pengeluaran usaha, otomatis terhitung di Laporan</p>
-  <div class="hero"><small>${ic('cash')}Total biaya ${PLB[per]}</small><div class="hv">Rp ${rp(T)}</div><div class="hd2"><span>${L.length} catatan</span></div></div>
+  const rows=[...Object.entries(K).map(([k,v])=>({l:k,v})),{l:'Bahan baku terpakai (otomatis)',v:PI.use},{l:'Bahan rusak / terbuang (otomatis)',v:PI.waste},{l:'Selisih opname (otomatis)',v:ad}].filter(r=>Math.abs(r.v)>0.5).sort((a,b)=>b.v-a.v).map(r=>({...r,t:(r.v<0?'−':'')+'Rp '+rp(Math.abs(r.v))+(T>0?' · '+Math.round(Math.abs(r.v)/T*100)+'%':'')}));
+  return `<h1>Biaya</h1><p class="sub">Catat biaya operasional di sini. Bahan baku terpakai terhitung otomatis dari Inventori</p>
+  <div class="hero"><small>${ic('cash')}Total beban usaha ${PLB[per]}</small><div class="hv">Rp ${rp(T)}</div><div class="hd2"><span>Operasional Rp ${rp(TO)}</span><span>Bahan baku Rp ${rp(TB)}</span><span>${L.length} catatan</span></div></div>
   ${chipsP()}<div class="acts"><button class="btn p" data-a="addbya">${ic3('plus')}Catat biaya</button></div>
   ${msg?`<p><b>${msg}</b></p>`:''}
-  ${rows.length?`<div class="sec">Per kategori</div><div class="c">${hb(rows)}</div>`:''}
-  <div class="sec">Riwayat biaya</div><div class="c">${L.length?L.map(x=>`<div class="row"><div><b>${esc(x.kat)}</b><div class="m">${fd(x.date)}${x.ket?' · '+esc(x.ket):''}</div></div><div style="text-align:right">Rp ${rp(x.amt)}<button class="x" data-a="bedit" data-id="${x.id}" aria-label="Ubah biaya">${ic('edit')}</button><button class="x" data-a="bdel" data-id="${x.id}" aria-label="Hapus biaya">${ic('trash')}</button></div></div>`).join(''):'<span class="d">Belum ada biaya pada periode ini.</span>'}</div>${labaRugi()}`}
+  ${rows.length?`<div class="sec">Per kategori</div><div class="c">${hb(rows)}<div class="d" style="margin-top:10px">Rumus: Total beban = Biaya operasional + Bahan baku terpakai + Bahan rusak ± Selisih opname. Belanja bahan tidak dihitung sebagai biaya karena masuk persediaan (aset); baru menjadi beban saat bahan dipakai.</div></div>`:''}
+  <div class="sec">Riwayat biaya operasional</div><div class="c">${L.length?L.map(x=>`<div class="row"><div><b>${esc(x.kat)}</b><div class="m">${fd(x.date)}${x.ket?' · '+esc(x.ket):''}</div></div><div style="text-align:right">Rp ${rp(x.amt)}<button class="x" data-a="bedit" data-id="${x.id}" aria-label="Ubah biaya">${ic('edit')}</button><button class="x" data-a="bdel" data-id="${x.id}" aria-label="Hapus biaya">${ic('trash')}</button></div></div>`).join(''):'<span class="d">Belum ada biaya pada periode ini.</span>'}</div>${labaRugi()}`}
 let LRM='';
 const MNm=ym=>ML[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
 // Hitung laba rugi satu bulan (default: bulan berjalan). Pendapatan = pembayaran masuk; beban = biaya + bahan baku terpakai (belanja bahan menambah persediaan, bukan beban); piutang aktif hanya informasi.
 function lrCalc(){
   const cur=iso(new Date()).slice(0,7),ms=new Set([cur]);
-  [...S.pay,...(S.biaya||[]),...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal)].forEach(x=>{if(x.date)ms.add(x.date.slice(0,7))});
+  [...S.pay,...(S.biaya||[]),...(S.mov||[]).filter(x=>x.t==='in'&&!x.awal),...S.outlets.flatMap(o=>o.items)].forEach(x=>{if(x.date)ms.add(x.date.slice(0,7))});
   if(!LRM||!ms.has(LRM))LRM=cur;const ym=LRM,by=(a,b)=>a.date.localeCompare(b.date);
-  const inc=S.pay.filter(p=>p.date.startsWith(ym)).sort(by).map(p=>({date:p.date,l:'Pembayaran — '+((S.outlets[p.o]||{name:'?'}).name)+' — '+sd(p.date)+' — '+(p.m||'Tunai'),v:p.amt}));
-  const P=invPer(ym+'-01',ym+'-31'),bh=[];
-  P.useRows.forEach(r=>bh.push({date:'9',l:'Bahan baku terpakai — '+r.nama+' ('+fq(r.qty)+' '+r.sat+')',v:r.v}));
-  P.wasteRows.forEach(r=>bh.push({date:'9',l:'Bahan rusak / terbuang — '+r.nama+' ('+fq(r.qty)+' '+r.sat+')',v:r.v}));
-  if(Math.abs(P.adjM-P.adjP)>0.5)bh.push({date:'9',l:P.adjM>P.adjP?'Selisih opname (stok kurang)':'Selisih opname (stok lebih)',v:P.adjM-P.adjP});
-  const exp=[...(S.biaya||[]).filter(x=>x.date.startsWith(ym)).map(x=>({date:x.date,l:x.kat+(x.ket?' — '+x.ket:'')+' — '+sd(x.date),v:x.amt})).sort(by),...bh];
+  const basis=S.lrBasis==='kas'?'kas':'akrual';
+  // Basis kas: pendapatan = pembayaran yang masuk. Basis akrual: pendapatan = penjualan titipan (jumlah terjual x harga) pada bulan itu, sudah dibayar atau belum.
+  const kas=S.pay.filter(p=>p.date.startsWith(ym)).sort(by).map(p=>({date:p.date,l:'Pembayaran — '+((S.outlets[p.o]||{name:'?'}).name)+' — '+sd(p.date)+' — '+(p.m||'Tunai'),v:p.amt}));
+  const akr=S.outlets.map(o=>{const L=o.items.filter(i=>i.date.startsWith(ym));return{date:'',l:'Penjualan titipan — '+o.name+' ('+L.length+' titipan)',v:L.reduce((t,i)=>t+iv(i),0)}}).filter(x=>x.v>0);
+  const inc=basis==='kas'?kas:akr;
+  const P=invPer(ym+'-01',ym+'-31'),hpp=[];
+  P.useRows.forEach(r=>hpp.push({date:'9',l:'Bahan baku terpakai — '+r.nama+' ('+fq(r.qty)+' '+r.sat+')',v:r.v}));
+  P.wasteRows.forEach(r=>hpp.push({date:'9',l:'Bahan rusak / terbuang — '+r.nama+' ('+fq(r.qty)+' '+r.sat+')',v:r.v}));
+  if(Math.abs(P.adjM-P.adjP)>0.5)hpp.push({date:'9',l:P.adjM>P.adjP?'Selisih opname (stok kurang)':'Selisih opname (stok lebih)',v:P.adjM-P.adjP});
+  const opr=(S.biaya||[]).filter(x=>x.date.startsWith(ym)).map(x=>({date:x.date,l:x.kat+(x.ket?' — '+x.ket:'')+' — '+sd(x.date),v:x.amt})).sort(by);
   const pv=S.outlets.map((o,oi)=>({l:'Tagihan — '+o.name,v:Math.max(0,due(oi))})).filter(x=>x.v>0);
-  const sm=a=>a.reduce((t,x)=>t+x.v,0),TI=sm(inc),TE=sm(exp);
-  return{cur,ym,opts:[...ms].sort().reverse(),inc,exp,pv,TI,TE,TP:sm(pv),NET:TI-TE}}
+  const sm=a=>a.reduce((t,x)=>t+x.v,0),TI=sm(inc),THP=sm(hpp),TOP=sm(opr),TE=THP+TOP;
+  return{cur,ym,opts:[...ms].sort().reverse(),basis,inc,hpp,opr,exp:[...opr,...hpp],pv,P,TI,THP,TOP,TE,TP:sm(pv),GP:TI-THP,NET:TI-TE,TK:sm(kas),TA:sm(akr)}}
 const lrSlug=()=>(S.nama||'KonsiKu').replace(/[^\w]+/g,'-').replace(/^-+|-+$/g,'')||'KonsiKu';
 function labaRugi(){
-  const c=lrCalc(),{ym,cur,inc,exp,pv,TI,TE,TP,NET}=c;
+  const c=lrCalc(),{ym,cur,inc,hpp,opr,pv,TI,THP,TOP,TP,GP,NET,basis}=c;
   const R=n=>n<0?'(Rp '+rp(-n)+')':'Rp '+rp(n),D='<span class="lrd">—</span>';
   const row=(l,d,k,x)=>`<tr${x?` class="${x}"`:''}><td>${l}</td><td class="n">${d}</td><td class="n">${k}</td></tr>`;
   const hd=t=>`<tr class="lrs"><td colspan="3">${t}</td></tr>`;
   const sub=[S.owner,S.kota,S.wa].filter(Boolean).join(' · ');
+  const bs=(k,t)=>`<button class="chip ${basis===k?'on':''}" data-a="lrb" data-b="${k}">${t}</button>`;
   return `<div class="sec">Laporan laba rugi</div><div class="c lr">
   <div class="lrlogo"><img src="${logoSrc()}" alt=""><div><b>${esc(S.nama||'KonsiKu')}</b>${sub?`<span>${esc(sub)}</span>`:''}</div></div>
-  <div class="lrh"><b>LAPORAN LABA RUGI</b><span>Berdasarkan transaksi yang tercatat dalam sistem</span><select id="lrm" aria-label="Pilih bulan">${c.opts.map(m=>`<option value="${m}"${m===ym?' selected':''}>${MNm(m)}${m===cur?' (bulan berjalan)':''}</option>`).join('')}</select></div>
+  <div class="lrh"><b>LAPORAN LABA RUGI</b><span>Berdasarkan transaksi yang tercatat dalam sistem</span><select id="lrm" aria-label="Pilih bulan">${c.opts.map(m=>`<option value="${m}"${m===ym?' selected':''}>${MNm(m)}${m===cur?' (bulan berjalan)':''}</option>`).join('')}</select>
+  <div class="chips" style="margin:10px 0 0;justify-content:center">${bs('akrual','Akrual (penjualan)')}${bs('kas','Kas (pembayaran)')}</div></div>
   <div class="tw"><table class="tb lrt"><thead><tr><th>URAIAN</th><th class="n">DEBET</th><th class="n">KREDIT</th></tr></thead><tbody>
-  ${hd('PENDAPATAN')}
-  ${inc.length?inc.map(x=>row(esc(x.l),D,R(x.v))).join(''):row('<span class="lrd">Belum ada pembayaran masuk</span>',D,D)}
+  ${hd(basis==='kas'?'PENDAPATAN (BASIS KAS)':'PENDAPATAN (BASIS AKRUAL)')}
+  ${inc.length?inc.map(x=>row(esc(x.l),D,R(x.v))).join(''):row('<span class="lrd">'+(basis==='kas'?'Belum ada pembayaran masuk':'Belum ada penjualan titipan')+'</span>',D,D)}
   ${row('Total Pendapatan',D,R(TI),'lrt2')}
-  ${hd('PIUTANG / TAGIHAN AKTIF')}
-  ${pv.map(x=>row(esc(x.l),R(x.v),D)).join('')}
-  ${row('Total Piutang Aktif',R(TP),D,'lrt2')}
-  ${hd('PENGELUARAN')}
-  ${exp.length?exp.map(x=>row(esc(x.l),R(x.v),D)).join(''):row('<span class="lrd">Belum ada beban</span>',D,D)}
-  ${row('Total Beban',R(TE),D,'lrt2')}
+  ${hd('BEBAN POKOK BAHAN BAKU')}
+  ${hpp.length?hpp.map(x=>row(esc(x.l),R(x.v),D)).join(''):row('<span class="lrd">Belum ada pemakaian bahan</span>',D,D)}
+  ${row('Total Beban Pokok Bahan Baku',R(THP),D,'lrt2')}
+  ${row('LABA KOTOR',GP<0?R(-GP):D,GP>=0?R(GP):D,'lrt2')}
+  ${hd('BEBAN OPERASIONAL')}
+  ${opr.length?opr.map(x=>row(esc(x.l),R(x.v),D)).join(''):row('<span class="lrd">Belum ada biaya operasional</span>',D,D)}
+  ${row('Total Beban Operasional',R(TOP),D,'lrt2')}
   </tbody><tfoot><tr class="${NET>=0?'lrok':'lrno'}"><td>LABA / (RUGI) BERSIH</td><td class="n">${NET<0?R(-NET):D}</td><td class="n">${NET>=0?R(NET):D}</td></tr></tfoot></table></div>
-  <p class="m" style="margin:10px 2px 0">Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan ${MNm(ym)}. Beban bahan dihitung saat bahan dipakai, bukan saat dibeli. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.</p>
+  <p class="m" style="margin:10px 2px 0">${lrNote(c)}</p>
   <div class="acts" style="margin:14px 0 0"><button class="btn p" data-a="lrpdf">${ic3('doc')}Export PDF</button><button class="btn wa" data-a="lrwa"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>Kirim ke WA</button></div></div>`}
+// Catatan rumus laba rugi (dipakai di layar dan PDF)
+function lrNote(c){
+  const pvt=c.pv.length?' Piutang aktif saat ini Rp '+rp(c.TP)+' ('+c.pv.map(x=>x.l.replace('Tagihan — ','')+' Rp '+rp(x.v)).join(', ')+') adalah tagihan yang belum dibayar dan tidak mengurangi laba.':'';
+  return 'Rumus: Laba kotor = Pendapatan − Beban pokok bahan baku. Laba bersih = Laba kotor − Beban operasional. Beban pokok bahan baku = Persediaan awal + Pembelian − Persediaan akhir (belanja bahan bukan biaya; baru menjadi beban saat bahan dipakai, dinilai harga rata-rata bergerak). '+(c.basis==='akrual'?'Pendapatan diakui saat titipan terjual (jumlah terjual × harga), sudah dibayar atau belum, sehingga sepadan dengan bahan yang dipakai.':'Pendapatan diakui saat pembayaran masuk (basis kas); bahan yang dipakai untuk titipan yang belum dibayar sudah menjadi beban.')+pvt+' Bulan '+MNm(c.ym)+'.'}
 
 // ===== PDF laba rugi (tanpa pustaka luar): huruf Helvetica bawaan PDF, logo disisipkan sebagai JPEG =====
 const HW=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
@@ -695,24 +707,26 @@ async function lrPdf(){
     ls.forEach((t,i)=>P.text(L+4,y+12+i*11,t,{b,z:9}));
     if(d!=null)P.text(DB,y+12,d,{b,z:9,al:'r'});if(k!=null)P.text(RT-4,y+12,k,{b,z:9,al:'r'});
     y+=h;P.line(L,y,RT,b?.9:.4,b?[.3,.3,.3]:[.85,.85,.85])};
-  sec('PENDAPATAN');
-  if(c.inc.length)c.inc.forEach(x=>row(x.l,'—',R(x.v)));else row('Belum ada pembayaran masuk','—','—');
+  sec(c.basis==='kas'?'PENDAPATAN (BASIS KAS)':'PENDAPATAN (BASIS AKRUAL)');
+  if(c.inc.length)c.inc.forEach(x=>row(x.l,'—',R(x.v)));else row(c.basis==='kas'?'Belum ada pembayaran masuk':'Belum ada penjualan titipan','—','—');
   row('Total Pendapatan','—',R(c.TI),1);
-  sec('PIUTANG / TAGIHAN AKTIF');
-  c.pv.forEach(x=>row(x.l,R(x.v),'—'));row('Total Piutang Aktif',R(c.TP),'—',1);
-  sec('PENGELUARAN');
-  if(c.exp.length)c.exp.forEach(x=>row(x.l,R(x.v),'—'));else row('Belum ada beban','—','—');
-  row('Total Beban',R(c.TE),'—',1);
+  sec('BEBAN POKOK BAHAN BAKU');
+  if(c.hpp.length)c.hpp.forEach(x=>row(x.l,R(x.v),'—'));else row('Belum ada pemakaian bahan','—','—');
+  row('Total Beban Pokok Bahan Baku',R(c.THP),'—',1);
+  row('LABA KOTOR',c.GP<0?R(-c.GP):'—',c.GP>=0?R(c.GP):'—',1);
+  sec('BEBAN OPERASIONAL');
+  if(c.opr.length)c.opr.forEach(x=>row(x.l,R(x.v),'—'));else row('Belum ada biaya operasional','—','—');
+  row('Total Beban Operasional',R(c.TOP),'—',1);
   room(80);y+=6;P.line(L,y,RT,2);
   const col=c.NET>=0?[.08,.5,.24]:[.86,.15,.15];
   P.text(L+4,y+20,'LABA / (RUGI) BERSIH',{b:1,z:11});
   if(c.NET<0)P.text(DB,y+20,R(-c.NET),{b:1,z:11,al:'r',c:col});else P.text(RT-4,y+20,R(c.NET),{b:1,z:11,al:'r',c:col});
   y+=32;P.line(L,y,RT,2);y+=16;
-  pdWrap('Laba = pendapatan (pembayaran yang masuk) dikurangi beban bulan '+MNm(c.ym)+'. Beban bahan dihitung saat bahan dipakai, bukan saat dibeli. Piutang aktif adalah tagihan yang belum dibayar saat ini dan tidak mengurangi laba.',0,8,TW).forEach((t,i)=>P.text(L,y+i*10,t,{z:8,c:G}));
+  pdWrap(lrNote(c),0,8,TW).forEach((t,i)=>P.text(L,y+i*10,t,{z:8,c:G}));
   P.text(RT,815,'Dibuat dengan KonsiKu · '+fd(iso(new Date())),{z:8,al:'r',c:G});
   return P.blob()}
 const lrFile=()=>`Laporan-Laba-Rugi-${lrSlug()}-${LRM}.pdf`;
-function lrText(){const c=lrCalc();return `*LAPORAN LABA RUGI*\n${S.nama||'KonsiKu'}\nPeriode: ${MNm(c.ym)}\n\nPendapatan: Rp ${rp(c.TI)}\nBeban: Rp ${rp(c.TE)}\n*${c.NET>=0?'Laba':'Rugi'} bersih: Rp ${rp(Math.abs(c.NET))}*`}
+function lrText(){const c=lrCalc();return `*LAPORAN LABA RUGI*\n${S.nama||'KonsiKu'}\nPeriode: ${MNm(c.ym)} (basis ${c.basis})\n\nPendapatan: Rp ${rp(c.TI)}\nBeban pokok bahan baku: Rp ${rp(c.THP)}\nLaba kotor: Rp ${rp(c.GP)}\nBeban operasional: Rp ${rp(c.TOP)}\n*${c.NET>=0?'Laba':'Rugi'} bersih: Rp ${rp(Math.abs(c.NET))}*`}
 function lrSave(blob){const u=URL.createObjectURL(blob),x=document.createElement('a');x.href=u;x.download=lrFile();document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),6000)}
 async function lrAct(a,btn){
   btn.disabled=true;
@@ -752,7 +766,7 @@ function rep(){
   ${list.length?`<div class="sec">Per cara bayar</div><div class="c">${t2}</div><div class="sec">Rincian per pembayaran</div>${clusters}`:''}
   ${OW>0?`<div class="d" style="margin:4px 4px 0">Tagihan berjalan Rp ${rp(OW)} belum masuk rekap karena belum dibayar.</div>`:''}
   <div class="sec">Biaya (${PLB[per]})</div><div class="c">${OUT>0?tb([['Kategori'],['Jumlah','n']],bRows,`<tr><td>Total biaya</td><td class="n">${rp(OUT)}</td></tr>`)+`<div style="height:12px"></div>`+tb([['Tgl'],['Kategori'],['Ket.'],['Jumlah','n']],bDet.map(x=>`<tr><td>${x.date?sd(x.date):'–'}</td><td>${esc(x.k)}</td><td>${esc(x.ket)}</td><td class="n">${rp(x.v)}</td></tr>`).join('')):'<span class="d">Belum ada biaya. Catat di menu Biaya.</span>'}</div>
-  <div class="sec">Hasil (${PLB[per]})</div><div class="c">${tb([['Keterangan'],['Jumlah','n']],`<tr><td>Pembayaran masuk</td><td class="n gr">${rp(IN)}</td></tr><tr><td>Total biaya</td><td class="n rd">- ${rp(OUT)}</td></tr>`,`<tr><td>Hasil bersih</td><td class="n">${NET<0?'-':''}${rp(Math.abs(NET))}</td></tr>`)}<div class="res ${NET>=0?'ok':'no'}"><span>${NET>=0?'Untung':'Rugi'}</span><span>Rp ${rp(Math.abs(NET))}</span></div></div>`}
+  <div class="sec">Hasil (${PLB[per]})</div><div class="c">${tb([['Keterangan'],['Jumlah','n']],`<tr><td>Pembayaran masuk</td><td class="n gr">${rp(IN)}</td></tr><tr><td>Total biaya</td><td class="n rd">- ${rp(OUT)}</td></tr>`,`<tr><td>Hasil bersih</td><td class="n">${NET<0?'-':''}${rp(Math.abs(NET))}</td></tr>`)}<div class="res ${NET>=0?'ok':'no'}"><span>${NET>=0?'Untung':'Rugi'}</span><span>Rp ${rp(Math.abs(NET))}</span></div><div class="d" style="margin-top:8px">Hasil ini berbasis kas (pembayaran masuk dikurangi beban). Laba akuntansi lengkap (akrual, laba kotor, laba bersih) ada di Laba Rugi, menu Biaya.</div></div>`}
 function more(){return `<h1>Lainnya</h1><p class="sub">Profil usaha, cadangan, dan data</p>
 ${LS.g('rr77lost')?`<div class="c" style="margin-bottom:12px"><b>Data yang tertimpa</b><p class="m">Perubahan dari perangkat ini tertimpa data yang lebih baru. Salinannya masih tersimpan.</p><button class="btn s" data-a="copylost">Salin</button> <button class="btn s" data-a="droplost">Buang</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Penyimpanan</b><p class="m">Data tersimpan aman di akun Anda dan disalin di perangkat ini. Status: ${esc(stat||'-')}</p><button class="btn s" data-a="logout">${ic('logout')}Keluar</button></div><div class="c" style="margin-bottom:12px"><b>Profil usaha</b><label>Nama usaha</label><input id="nm" value="${esc(S.nama||'KonsiKu')}" maxlength="40"><label>Nama pemilik / pengelola</label><input id="ow" value="${esc(S.owner||'')}" maxlength="40"><label>No. WhatsApp usaha</label><input id="wa2" inputmode="tel" value="${esc(S.wa||'')}" maxlength="20" placeholder="08xx"><label>Kota</label><input id="kt" value="${esc(S.kota||'')}" maxlength="40"><label>Rekening / cara bayar (ikut di teks tagihan)</label><input id="bk" value="${esc(S.bank||'')}" maxlength="80" placeholder="mis. BSI 7123… a.n. …"><button class="btn p s" data-a="savenm" style="margin-top:10px">Simpan profil</button><label style="margin-top:18px">Logo</label><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="logo has" style="width:64px;height:64px"><img src="${S.logo||DEF_LOGO}" alt="Logo"></div><div><label class="btn s" for="lg" style="margin:0;text-transform:none;letter-spacing:0">${S.logo?'Ganti logo':'Pilih logo'}</label><input type="file" id="lg" accept="image/*" style="display:none">${S.logo?`<button class="btn s" data-a="rmlogo" style="margin-left:8px">${ic('trash')}Hapus</button>`:''}</div></div><p class="m" style="margin:10px 0 0">Logo ini dipakai di semua tampilan: header, layar PIN, ikon tab browser, dan ikon layar utama HP (bila aplikasi dipasang ulang). Hapus untuk kembali ke logo KonsiKu.</p></div>
 ${S.demo?`<div class="c" style="margin-bottom:12px"><b>Data contoh aktif</b><p class="m">Yang tampil sekarang adalah data fiktif untuk mencoba aplikasi.</p><button class="btn s" data-a="rmdemo">${ic('trash')}Hapus data contoh</button></div>`:''}<div class="c" style="margin-bottom:12px"><b>Daftar produk &amp; harga</b><p class="m">Nama dan harga satuan akan terisi otomatis saat mencatat titipan. Perubahan baru berlaku setelah menekan <b>Simpan produk</b>.</p><div id="pkl">${pkRows()}</div><div class="d" id="pke" style="color:#dc2626;margin-top:8px"></div><div class="acts" style="margin:12px 0 0"><button class="btn s" data-a="pkadd">${ic3('plus')}Tambah produk</button><button class="btn s" data-a="pksort">Urutkan A-Z</button></div><button class="btn p" data-a="savepk" style="margin-top:12px;width:100%;justify-content:center">Simpan produk</button></div>
@@ -831,7 +845,7 @@ function pstart(){const t=new Date();return per==='all'?'0000-00-00':per==='bln'
 function mut(b){const s0=pstart();let a=0,i=0,o=0,j=0;S.mov.forEach(x=>{if(x.b!==b.id)return;const g=x.t==='in'?1:-1;if(x.date<s0)a+=g*x.qty;else if(x.awal)a+=x.qty;else if(x.adj)j+=g*x.qty;else if(x.t==='in')i+=x.qty;else o+=x.qty});return{a:r3(a),i:r3(i),o:r3(o),j:r3(j),z:r3(a+i-o+j)}}
 const eq=(m,f)=>`<div class="eq"><div>Awal<b>${f(m.a)}</b></div><div>+ Masuk<b>${f(m.i)}</b></div><div>− Keluar<b>${f(m.o)}</b></div><div>± Opname<b>${f(m.j)}</b></div><div class="z">= Akhir<b>${f(m.z)}</b></div></div>`;
 const mlab=x=>x.t==='in'?(x.awal?'Stok awal':x.adj?'Opname (+)':'Belanja'):(x.adj?'Opname (−)':(x.jenis||'Pakai'));
-function btext(){const {st,exp,om,sal}=bsum();let t=`Rekap bahan baku ${S.nama||'KonsiKu'} (${PL[per]})\nBelanja bahan: Rp ${rp(exp)}\n\nMutasi stok:\n`;st.forEach(b=>{const m=mut(b);t+=`- ${b.nama}: awal ${fq(m.a)} + masuk ${fq(m.i)} - keluar ${fq(m.o)} +/- opname ${fq(m.j)} = ${fq(m.z)} ${b.sat} (Rp ${rp(b.nilai)})\n`});return t}
+function btext(){const {st,exp}=bsum(),Q=invPer(pstart(),'9999-12-31');let t=`Rekap bahan baku ${S.nama||'KonsiKu'} (${PL[per]})\nBelanja bahan: Rp ${rp(exp)}\nBahan terpakai: Rp ${rp(Q.use+Q.waste+Q.adjM-Q.adjP)}\n\nMutasi stok:\n`;st.forEach(b=>{const m=mut(b);t+=`- ${b.nama}: awal ${fq(m.a)} + masuk ${fq(m.i)} - keluar ${fq(m.o)} +/- opname ${fq(m.j)} = ${fq(m.z)} ${b.sat} (Rp ${rp(b.nilai)})\n`});t+=`\nPersediaan (Rp): awal ${rp(Q.open)} + belanja ${rp(Q.buy+Q.awal)} - terpakai ${rp(Q.use+Q.waste+Q.adjM-Q.adjP)} = akhir ${rp(Q.close)}`;return t}
 function kartu(id){
   const b=stock().find(x=>x.id===id);if(!b)return;
   const L=S.mov.map((x,i)=>({...x,i})).filter(x=>x.b===id).sort((a,c)=>a.date.localeCompare(c.date)||a.i-c.i);let sal=0;
@@ -843,21 +857,24 @@ function kartu(id){
 const jl=x=>x.t==='in'?(x.awal?['Stok awal','g0']:x.adj?['Opname','bl']:['Belanja','gr']):(x.adj?['Opname','bl']:[({'Pemakaian produksi':'Pakai','Rusak / terbuang':'Rusak','Koreksi stok':'Koreksi'})[x.jenis]||x.jenis||'Pakai','or']);
 const fs=(n,f)=>n?(n>0?'+':'−')+f(Math.abs(n)):'<span class="z0">–</span>';
 function bahan(){
-  const st=stock(),M=st.map(b=>({b,m:mut(b)})),nil=st.reduce((s,b)=>s+b.nilai,0),low=st.filter(b=>b.sisa<=(b.min||0)).length;
+  const E=invEng(),P=invPer(pstart(),'9999-12-31'),ad=P.adjM-P.adjP,st=stock(),M=st.map(b=>({b,m:mut(b)})),nil=st.reduce((s,b)=>s+b.nilai,0),low=st.filter(b=>b.sisa<=(b.min||0)).length;
   const chips=`<div class="chips">${[['bln','Bulan ini'],['7','7 hari'],['all','Semua']].map(([k,l])=>`<button class="chip ${per===k?'on':''}" data-a="per" data-p="${k}">${l}</button>`).join('')}</div>`;
   const mv=S.mov.map((x,i)=>({...x,i})).filter(x=>x.awal?false:inP(x.date)).sort((a,b)=>b.date.localeCompare(a.date)||b.i-a.i).slice(0,60);
   const byb=st.map(b=>({l:b.nama,v:S.mov.filter(x=>x.b===b.id&&x.t==='in'&&!x.awal&&!x.adj&&inP(x.date)).reduce((s,x)=>s+x.total,0)})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
   const exp=byb.reduce((s,r)=>s+r.v,0);
-  const sts=b=>b.sisa<=0?['Habis','d']:b.sisa<=(b.min||0)?['Menipis','w']:['Aman','ok'];
+  const sts=b=>b.sisa<0?['Minus','d']:b.sisa<=0?['Habis','d']:b.sisa<=(b.min||0)?['Menipis','w']:['Aman','ok'];
   const qa=(a,ic_,t,c)=>`<button class="qa ${c}" data-a="${a}">${ic3(ic_)}${t}</button>`;
   const t1=`<div class="tw"><table class="tb bt"><thead><tr><th>Bahan</th><th class="n">Awal</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Opname</th><th class="n">Akhir</th></tr></thead><tbody>${M.map(({b,m})=>{const k=sts(b);return `<tr class="st-${k[1]}" data-a="kst" data-id="${b.id}"><td><b>${esc(b.nama)}</b><small>${esc(b.sat)} · <span class="stp ${k[1]}">${k[0]}</span></small></td><td class="n">${m.a?fq(m.a):'<span class="z0">–</span>'}</td><td class="n gr">${m.i?'+'+fq(m.i):'<span class="z0">–</span>'}</td><td class="n or">${m.o?'−'+fq(m.o):'<span class="z0">–</span>'}</td><td class="n bl">${fs(m.j,fq)}</td><td class="n ak ${k[1]}">${fq(m.z)}</td></tr>`}).join('')}</tbody></table></div><div class="d" style="margin-top:8px">Ketuk baris untuk membuka kartu stok. Rumus: Awal + Masuk − Keluar ± Opname = Akhir (${PL[per]}).</div>`;
+  const rr=(l,v,c)=>`<tr><td>${l}</td><td class="n ${c||''}">${v}</td></tr>`;
+  const t4=`<div class="tw"><table class="tb bt"><thead><tr><th>Persediaan (Rp)</th><th class="n">Nilai</th></tr></thead><tbody>${rr('Persediaan awal',rp(P.open))}${rr('+ Pembelian bahan',rp(P.buy),'gr')}${P.awal>0.5?rr('+ Stok awal dicatat',rp(P.awal),'gr'):''}${rr('− Bahan terpakai (produksi)',rp(P.use),'or')}${P.waste>0.5?rr('− Rusak / terbuang',rp(P.waste),'or'):''}${Math.abs(ad)>0.5?rr((ad>0?'− ':'+ ')+'Selisih opname',rp(Math.abs(ad)),ad>0?'or':'gr'):''}</tbody><tfoot><tr><td>= Persediaan akhir</td><td class="n">Rp ${rp(P.close)}</td></tr></tfoot></table></div><div class="d" style="margin-top:8px">Rumus: Persediaan awal + Pembelian − Bahan terpakai − Rusak ± Selisih opname = Persediaan akhir. Bahan terpakai dinilai dengan harga rata-rata bergerak dan menjadi beban pokok di Laba Rugi (menu Biaya).</div>${Math.abs(P.close-nil)>1?`<div class="d" style="margin-top:6px;color:#dc2626">Nilai stok (Rp ${rp(nil)}) berbeda dengan persediaan akhir (Rp ${rp(P.close)}). Periksa bahan bertanda Minus atau Habis: pemakaian melebihi stok tercatat.</div>`:''}`;
   const t2=`<div class="tw"><table class="tb bt"><thead><tr><th>Bahan</th><th class="n">Stok akhir</th><th class="n">Harga rata²</th><th class="n">Nilai</th></tr></thead><tbody>${st.map(b=>`<tr><td><b>${esc(b.nama)}</b></td><td class="n">${fq(b.sisa)} ${esc(b.sat)}</td><td class="n">${b.avg?rp(b.avg):'<span class="z0">–</span>'}</td><td class="n">${rp(b.nilai)}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">Total nilai stok</td><td class="n">Rp ${rp(nil)}</td></tr></tfoot></table></div>`;
-  const t3=mv.length?`<div class="tw"><table class="tb bt bh"><thead><tr><th>Tgl</th><th>Bahan</th><th>Jenis</th><th class="n">Jumlah</th><th class="n">Rp</th><th></th></tr></thead><tbody>${mv.map(x=>{const b=bn(x.b),j=jl(x);return `<tr><td>${sd(x.date)}</td><td><b>${esc(b.nama)}</b>${x.ket?`<small>${esc(x.ket)}</small>`:''}</td><td><span class="jp ${j[1]}">${j[0]}</span></td><td class="n ${x.t==='in'?'gr':'or'}">${x.t==='in'?'+':'−'}${fq(x.qty)}<small>${esc(b.sat)}</small></td><td class="n">${x.t==='in'&&!x.adj?rp(x.total):'<span class="z0">–</span>'}</td><td class="ac">${x.adj?'':`<button class="x" data-a="emv" data-id="${x.id}" aria-label="Ubah">${ic('edit')}</button>`}<button class="x" data-a="delmv" data-id="${x.id}" aria-label="Hapus riwayat">${ic('trash')}</button></td></tr>`}).join('')}</tbody></table></div>`:'<span class="d">Belum ada transaksi pada periode ini.</span>';
+  const t3=mv.length?`<div class="tw"><table class="tb bt bh"><thead><tr><th>Tgl</th><th>Bahan</th><th>Jenis</th><th class="n">Jumlah</th><th class="n">Nilai Rp</th><th></th></tr></thead><tbody>${mv.map(x=>{const b=bn(x.b),j=jl(x);return `<tr><td>${sd(x.date)}</td><td><b>${esc(b.nama)}</b>${x.ket?`<small>${esc(x.ket)}</small>`:''}</td><td><span class="jp ${j[1]}">${j[0]}</span></td><td class="n ${x.t==='in'?'gr':'or'}">${x.t==='in'?'+':'−'}${fq(x.qty)}<small>${esc(b.sat)}</small></td><td class="n">${(()=>{const cv=E.C[x.id||('i'+x.i)];return cv>0.5?rp(cv):'<span class="z0">–</span>'})()}</td><td class="ac">${x.adj?'':`<button class="x" data-a="emv" data-id="${x.id}" aria-label="Ubah">${ic('edit')}</button>`}<button class="x" data-a="delmv" data-id="${x.id}" aria-label="Hapus riwayat">${ic('trash')}</button></td></tr>`}).join('')}</tbody></table></div>`:'<span class="d">Belum ada transaksi pada periode ini.</span>';
   return `<h1>Inventori</h1><p class="sub">Stok masuk, keluar, dan sisa dalam satu tabel</p>
-  <div class="hero"><small>${ic('box')}Nilai stok saat ini</small><div class="hv">Rp ${rp(nil)}</div><div class="hd2"><span>${st.length} jenis bahan</span><span class="${low?'alert':''}">${low} perlu belanja</span><span>Belanja Rp ${rp(exp)}</span></div></div>
+  <div class="hero"><small>${ic('box')}Nilai stok saat ini</small><div class="hv">Rp ${rp(nil)}</div><div class="hd2"><span>${st.length} jenis bahan</span><span class="${low?'alert':''}">${low} perlu belanja</span><span>Belanja Rp ${rp(exp)}</span><span>Terpakai Rp ${rp(P.use+P.waste+ad)}</span></div></div>
   ${msg?`<p><b>${msg}</b></p>`:''}
   <div class="qas">${qa('bin','cart','Belanja','g')}${qa('bout','box','Pakai','o')}${qa('bop','doc','Opname','b')}${qa('bnew','plus','Bahan baru','p')}</div>
   ${st.length?`${chips}<div class="sec">Stok per bahan</div><div class="c">${t1}</div>
+  <div class="sec">Perhitungan persediaan · ${PL[per]}</div><div class="c">${t4}</div>
   <div class="sec">Nilai stok</div><div class="c">${t2}</div>
   ${byb.length?`<div class="sec">Belanja per bahan · ${PL[per]}</div><div class="c">${hb(byb.map(r=>({l:r.l,v:r.v,t:'Rp '+rp(r.v)})))}</div>`:''}
   <div class="sec">Riwayat transaksi · ${PL[per]}</div><div class="c">${t3}</div>
@@ -1180,6 +1197,7 @@ document.addEventListener('click',async e=>{
   else if(a==='copyall'){msg=(await cp(CL().map(ctext).join('\n----------\n')))?'Semua rekap tersalin':'Gagal menyalin';render()}
   else if(a==='reopen'){const r=(S.rek||[]).find(x=>x.id===b.dataset.id);if(!r)return;if(!await askC('Buka lagi tagihan ini? Titipan dan pembayarannya digabung kembali ke tagihan berjalan outlet tersebut.'))return;S.outlets[r.o].items.forEach(i=>{if(i.c===r.id)delete i.c});S.pay.forEach(x=>{if(x.c===r.id)delete x.c});S.rek=S.rek.filter(x=>x.id!==r.id);save();msg='Tagihan dibuka lagi';render()}
   else if(a==='copyrek'){const r=(S.rek||[]).find(x=>x.id===b.dataset.id);msg=r&&(await cp(rtext(r)))?'Rekap tersalin':'Gagal menyalin';render()}
+  else if(a==='lrb'){S.lrBasis=b.dataset.b==='kas'?'kas':'akrual';save();render()}
   else if(a==='lrpdf'||a==='lrwa'){await lrAct(a,b)}
   else if(a==='addbya')openB();
   else if(a==='bedit')openB(b.dataset.id);
