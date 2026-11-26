@@ -231,7 +231,7 @@ nav:empty{display:none}
 .bt .ak{font-weight:800;font-size:.84rem}.bt .ak.d{color:#dc2626}.bt .ak.w{color:#d97706}.bt .ak.ok{color:var(--tx)}
 .stp{display:inline-block;padding:1px 6px;border-radius:99px;font-size:.62rem;font-weight:700;background:rgba(34,197,94,.14);color:#15803d}
 .stp.w{background:rgba(245,158,11,.18);color:#b45309}.stp.d{background:rgba(220,38,38,.14);color:#b91c1c}
-.bh th:nth-child(1){width:13%}.bh th:nth-child(2){width:24%}.bh th:nth-child(3){width:17%}.bh th:nth-child(4){width:15%}.bh th:nth-child(5){width:15%}.bh th:nth-child(6){width:56px}.bh td:nth-child(5){padding-right:8px}.jp{white-space:nowrap}
+.bh th:nth-child(1){width:11%}.bh th:nth-child(2){width:21%}.bh th:nth-child(3){width:15%}.bh th:nth-child(4){width:14%}.bh th:nth-child(5){width:19%}.bh th:nth-child(6){width:58px}.bh td:nth-child(5){padding-right:10px}.bt.rf th:first-child,.bt.rf td:first-child{width:68%}.bt.rf td:first-child{padding-right:4px}.jp{white-space:nowrap}
 .bh td:first-child{width:auto;padding-left:6px;white-space:normal;font-size:.7rem}
 .jp{display:inline-block;padding:2px 6px;border-radius:8px;font-size:.64rem;font-weight:700;background:rgba(34,197,94,.14);color:#15803d}
 .jp.or{background:rgba(249,115,22,.15);color:#c2410c}.jp.bl{background:rgba(59,130,246,.15);color:#1d4ed8}.jp.g0{background:rgba(100,116,139,.15);color:#475569}
@@ -468,7 +468,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.1.7',APP_D='26 Nov 2026';
+const APP_V='2.1.8',APP_D='26 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
@@ -722,7 +722,8 @@ async function lrPdf(){
   P.text(L+4,y+20,'LABA / (RUGI) BERSIH',{b:1,z:11});
   if(c.NET<0)P.text(DB,y+20,R(-c.NET),{b:1,z:11,al:'r',c:col});else P.text(RT-4,y+20,R(c.NET),{b:1,z:11,al:'r',c:col});
   y+=32;P.line(L,y,RT,2);y+=16;
-  pdWrap(lrNote(c),0,8,TW).forEach((t,i)=>P.text(L,y+i*10,t,{z:8,c:G}));
+  const nl=pdWrap(lrNote(c),0,8,TW);if(y+nl.length*10>800){P.newPage();y=40}
+  nl.forEach((t,i)=>P.text(L,y+i*10,t,{z:8,c:G}));
   P.text(RT,815,'Dibuat dengan KonsiKu · '+fd(iso(new Date())),{z:8,al:'r',c:G});
   return P.blob()}
 const lrFile=()=>`Laporan-Laba-Rugi-${lrSlug()}-${LRM}.pdf`;
@@ -866,7 +867,7 @@ function bahan(){
   const qa=(a,ic_,t,c)=>`<button class="qa ${c}" data-a="${a}">${ic3(ic_)}${t}</button>`;
   const t1=`<div class="tw"><table class="tb bt"><thead><tr><th>Bahan</th><th class="n">Awal</th><th class="n">Masuk</th><th class="n">Keluar</th><th class="n">Opname</th><th class="n">Akhir</th></tr></thead><tbody>${M.map(({b,m})=>{const k=sts(b);return `<tr class="st-${k[1]}" data-a="kst" data-id="${b.id}"><td><b>${esc(b.nama)}</b><small>${esc(b.sat)} · <span class="stp ${k[1]}">${k[0]}</span></small></td><td class="n">${m.a?fq(m.a):'<span class="z0">–</span>'}</td><td class="n gr">${m.i?'+'+fq(m.i):'<span class="z0">–</span>'}</td><td class="n or">${m.o?'−'+fq(m.o):'<span class="z0">–</span>'}</td><td class="n bl">${fs(m.j,fq)}</td><td class="n ak ${k[1]}">${fq(m.z)}</td></tr>`}).join('')}</tbody></table></div><div class="d" style="margin-top:8px">Ketuk baris untuk membuka kartu stok. Rumus: Awal + Masuk − Keluar ± Opname = Akhir (${PL[per]}).</div>`;
   const rr=(l,v,c)=>`<tr><td>${l}</td><td class="n ${c||''}">${v}</td></tr>`;
-  const t4=`<div class="tw"><table class="tb bt"><thead><tr><th>Persediaan (Rp)</th><th class="n">Nilai</th></tr></thead><tbody>${rr('Persediaan awal',rp(P.open))}${rr('+ Pembelian bahan',rp(P.buy),'gr')}${P.awal>0.5?rr('+ Stok awal dicatat',rp(P.awal),'gr'):''}${rr('− Bahan terpakai (produksi)',rp(P.use),'or')}${P.waste>0.5?rr('− Rusak / terbuang',rp(P.waste),'or'):''}${Math.abs(ad)>0.5?rr((ad>0?'− ':'+ ')+'Selisih opname',rp(Math.abs(ad)),ad>0?'or':'gr'):''}</tbody><tfoot><tr><td>= Persediaan akhir</td><td class="n">Rp ${rp(P.close)}</td></tr></tfoot></table></div><div class="d" style="margin-top:8px">Rumus: Persediaan awal + Pembelian − Bahan terpakai − Rusak ± Selisih opname = Persediaan akhir. Bahan terpakai dinilai dengan harga rata-rata bergerak dan menjadi beban pokok di Laba Rugi (menu Biaya).</div>${Math.abs(P.close-nil)>1?`<div class="d" style="margin-top:6px;color:#dc2626">Nilai stok (Rp ${rp(nil)}) berbeda dengan persediaan akhir (Rp ${rp(P.close)}). Periksa bahan bertanda Minus atau Habis: pemakaian melebihi stok tercatat.</div>`:''}`;
+  const t4=`<div class="tw"><table class="tb bt rf"><thead><tr><th>Persediaan (Rp)</th><th class="n">Nilai</th></tr></thead><tbody>${rr('Persediaan awal',rp(P.open))}${rr('+ Pembelian bahan',rp(P.buy),'gr')}${P.awal>0.5?rr('+ Stok awal dicatat',rp(P.awal),'gr'):''}${rr('− Bahan terpakai (produksi)',rp(P.use),'or')}${P.waste>0.5?rr('− Rusak / terbuang',rp(P.waste),'or'):''}${Math.abs(ad)>0.5?rr((ad>0?'− ':'+ ')+'Selisih opname',rp(Math.abs(ad)),ad>0?'or':'gr'):''}</tbody><tfoot><tr><td>= Persediaan akhir</td><td class="n">Rp ${rp(P.close)}</td></tr></tfoot></table></div><div class="d" style="margin-top:8px">Rumus: Persediaan awal + Pembelian − Bahan terpakai − Rusak ± Selisih opname = Persediaan akhir. Bahan terpakai dinilai dengan harga rata-rata bergerak dan menjadi beban pokok di Laba Rugi (menu Biaya).</div>${Math.abs(P.close-nil)>1?`<div class="d" style="margin-top:6px;color:#dc2626">Nilai stok (Rp ${rp(nil)}) berbeda dengan persediaan akhir (Rp ${rp(P.close)}). Periksa bahan bertanda Minus atau Habis: pemakaian melebihi stok tercatat.</div>`:''}`;
   const t2=`<div class="tw"><table class="tb bt"><thead><tr><th>Bahan</th><th class="n">Stok akhir</th><th class="n">Harga rata²</th><th class="n">Nilai</th></tr></thead><tbody>${st.map(b=>`<tr><td><b>${esc(b.nama)}</b></td><td class="n">${fq(b.sisa)} ${esc(b.sat)}</td><td class="n">${b.avg?rp(b.avg):'<span class="z0">–</span>'}</td><td class="n">${rp(b.nilai)}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">Total nilai stok</td><td class="n">Rp ${rp(nil)}</td></tr></tfoot></table></div>`;
   const t3=mv.length?`<div class="tw"><table class="tb bt bh"><thead><tr><th>Tgl</th><th>Bahan</th><th>Jenis</th><th class="n">Jumlah</th><th class="n">Nilai Rp</th><th></th></tr></thead><tbody>${mv.map(x=>{const b=bn(x.b),j=jl(x);return `<tr><td>${sd(x.date)}</td><td><b>${esc(b.nama)}</b>${x.ket?`<small>${esc(x.ket)}</small>`:''}</td><td><span class="jp ${j[1]}">${j[0]}</span></td><td class="n ${x.t==='in'?'gr':'or'}">${x.t==='in'?'+':'−'}${fq(x.qty)}<small>${esc(b.sat)}</small></td><td class="n">${(()=>{const cv=E.C[x.id||('i'+x.i)];return cv>0.5?rp(cv):'<span class="z0">–</span>'})()}</td><td class="ac">${x.adj?'':`<button class="x" data-a="emv" data-id="${x.id}" aria-label="Ubah">${ic('edit')}</button>`}<button class="x" data-a="delmv" data-id="${x.id}" aria-label="Hapus riwayat">${ic('trash')}</button></td></tr>`}).join('')}</tbody></table></div>`:'<span class="d">Belum ada transaksi pada periode ini.</span>';
   return `<h1>Inventori</h1><p class="sub">Stok masuk, keluar, dan sisa dalam satu tabel</p>
