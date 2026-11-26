@@ -125,13 +125,17 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - **Dasar pendapatan** bisa dipilih: *Akrual* (bawaan; penjualan titipan = jumlah terjual × harga pada bulan itu, sudah dibayar atau belum, sehingga sepadan dengan bahan yang dipakai) atau *Kas* (pembayaran yang masuk). Pilihan tersimpan di data (`lrBasis`). Piutang aktif hanya informasi di catatan laporan.
 - Berlaku juga di PDF, teks WhatsApp, dan rekap bahan. Menu Laporan tetap berbasis kas dan diberi catatan.
 
-## Tampilan laptop / layar lebar (v2.2.0)
-- Otomatis memakai **tampilan laptop** bila perangkat punya mouse/trackpad dan layar lebar (mulai 1100 px): menu pindah ke **sidebar kiri** dengan logo, konten memakai lebar layar (maks. 1160 px, di tengah), kartu ringkasan 4 kolom, dan formulir tampil sebagai **jendela di tengah layar**. Jendela sedang (768-1099 px) memakai konten lebih lebar dengan menu tetap di bawah.
-- **HP dan tablet sentuh selalu tampilan mobile**, termasuk saat browser HP memakai "Situs desktop". Dasarnya aturan CSS (`pointer: fine` dan lebar layar), jadi tidak ada pengaturan yang perlu diubah pengguna; menyusutkan jendela laptop juga kembali ke tampilan sempit.
+## Tampilan laptop / layar lebar (v2.2.x)
+Tampilan mengikuti **lebar layar** (viewport), bukan jenis perangkat:
+- **Di bawah 768 px** (HP biasa, mode portrait): tampilan mobile seperti semula, tidak berubah.
+- **768-1099 px** (jendela sedang, tablet, dan mode **"Situs desktop" di browser HP** yang berlebar 980 px): konten melebar penuh (maks. 920 px), kartu ringkasan 4 kolom, menu tetap di bawah, formulir tampil di tengah layar.
+- **Mulai 1100 px** (laptop/PC): menu menjadi **sidebar kiri** dengan logo, konten di tengah (maks. 1160 px), tabel melebar, formulir sebagai jendela di tengah. Halaman PIN dan pendaftaran tampil di tengah tanpa sidebar.
+- Mengecilkan jendela laptop otomatis kembali ke tampilan sempit/mobile.
 - Perbaikan kecil: nominal Laba Bersih di tabel Laba Rugi tidak lagi terpotong di sisi kanan pada angka jutaan.
 
 ## Versi
-- **2.2.0** (26 Nov 2026): tampilan laptop (sidebar, lebar penuh, modal), HP tetap mobile; nominal laba bersih tidak terpotong.
+- **2.2.1** (26 Nov 2026): tampilan laptop mengikuti lebar layar sehingga mode "Situs desktop" di HP juga memenuhi layar; HP biasa tetap mobile.
+- **2.2.0** (26 Nov 2026): tampilan laptop (sidebar, lebar penuh, modal); nominal laba bersih tidak terpotong.
 - **2.1.9** (26 Nov 2026): menu Lainnya dirapikan: profil usaha ringkas (isian 2 kolom, logo dan tombol Simpan sebaris), lalu empat bagian yang bisa dibuka/ditutup (Daftar produk, Data & cadangan, Keamanan akun) dan baris Penyimpanan/Keluar; tanggal rilis dihapus dari tulisan versi; logo KonsiKu kecil di footer.
 - **2.1.8** (26 Nov 2026): kolom Nilai Rp di riwayat Inventori tidak lagi menempel ke tombol ubah; label tabel Perhitungan persediaan tidak terlipat; catatan rumus di PDF laba rugi pindah ke halaman baru bila tidak muat.
 - **2.1.7** (26 Nov 2026): menu Inventori dan Biaya disesuaikan aturan akuntansi persediaan; Laba Rugi memakai format laba kotor dan laba bersih, dengan pilihan basis akrual atau kas.

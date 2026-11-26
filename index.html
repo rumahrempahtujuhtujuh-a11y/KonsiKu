@@ -312,9 +312,9 @@ nav:empty{display:none}
 .lrt th.n,.lrt td.n{width:31%}
 .lrt tfoot td.n{font-size:.85rem;white-space:nowrap;padding-right:6px}
 /* ===== Tampilan laptop / layar lebar =====
-   Hanya aktif pada perangkat dengan mouse/trackpad (pointer halus) dan layar lebar.
-   HP dan tablet sentuh, juga "situs desktop" di HP, tetap memakai tampilan mobile di atas. */
-@media (min-width:768px) and (hover:hover) and (pointer:fine){
+   Mengikuti lebar layar (viewport): di bawah 768 px = tampilan mobile; 768-1099 px = konten lebar dengan menu di bawah
+   (termasuk mode "Situs desktop" di HP yang berlebar 980 px); mulai 1100 px = sidebar kiri seperti aplikasi desktop. */
+@media (min-width:768px){
   main{max-width:920px}
   header{padding-left:max(18px,calc((100% - 920px)/2 + 18px));padding-right:max(18px,calc((100% - 920px)/2 + 18px))}
   nav{max-width:896px}
@@ -326,7 +326,7 @@ nav:empty{display:none}
   .btn:hover{filter:brightness(1.04)}
   .bt tbody tr[data-a]:hover td{background:var(--acct)}
 }
-@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+@media (min-width:1100px){
   :root{--sbw:236px}
   header{margin-left:var(--sbw);padding:18px 40px 26px;border-radius:0 0 26px 26px}
   header .t b{font-size:1.15rem}
@@ -512,7 +512,7 @@ async function boot(){
     S=L;REV=lr;dirty=ld;norm();render();setStat('Offline: memakai salinan di perangkat ini')
   }else fail((res&&res.j&&res.j.error)||'Tidak bisa terhubung. Periksa internet.');
 }
-const APP_V='2.2.0',APP_D='26 Nov 2026';
+const APP_V='2.2.1',APP_D='26 Nov 2026';
 let tab='home',pre=0,msg='',per='bln';
 const act=o=>o.items.filter(i=>!i.c);
 // Titipan: qty = dititipkan, sold = terjual, ret = retur. Tagihan dihitung dari yang terjual. Data lama (tanpa sold) dianggap terjual semua. Sisa di outlet = titipan - terjual - retur.
