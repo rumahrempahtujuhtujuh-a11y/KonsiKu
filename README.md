@@ -111,12 +111,16 @@ Menu Analisa digabung ke Beranda: ringkasan di atas, analisa produk (pilih Bulan
 - Ketuk baris bahan untuk membuka kartu stok; di sana tersedia Masuk, Keluar, Opname, dan Ubah/Hapus bahan.
 - Filter periode (Bulan ini / 7 hari / Semua) berlaku untuk tabel stok, belanja, dan riwayat. Data stok tidak berubah, hanya tampilannya.
 
+## Inventori dan standar akuntansi persediaan (v2.2)
+- Menu **Bahan** diganti nama menjadi **Inventori** (persediaan bahan baku).
+- **Belanja bukan biaya.** Belanja bahan hanya menambah nilai persediaan (aset). Beban baru dicatat ke Laba Rugi saat bahan **dipakai** (beban bahan baku terpakai / HPP).
+- Penilaian memakai **rata-rata bergerak** (moving average): setiap pemakaian dinilai dengan harga rata-rata pada saat itu.
+- Perlakuan transaksi: Pakai (produksi) = beban bahan terpakai; Rusak / terbuang = beban bahan rusak; Opname stok kurang = beban selisih; Opname stok lebih = mengurangi beban; Stok awal = persediaan awal, bukan beban.
+- Rumus: Persediaan awal + Pembelian - Terpakai/rusak/selisih = Persediaan akhir (cocok dengan stok fisik x harga rata-rata). Ditampilkan di menu Inventori (Ringkasan persediaan), di Laba Rugi (bagian Persediaan, informasi), dan di Laporan.
+- Pendapatan pada laporan tetap berbasis pembayaran yang masuk (kas), sedangkan beban bahan berbasis pemakaian. Bila ingin pendapatan berbasis penjualan (tagihan terjual), perlu pengaturan terpisah.
+
 ## Versi
-- **2.1.5** (25 Nov 2026): semua kotak konfirmasi dan isian bawaan browser (yang judulnya memuat alamat web, mis. "konsiku.vercel.app says") diganti dialog di dalam aplikasi, tanpa alamat web. Kolom PIN tidak lagi bertipe password sehingga Google/Samsung tidak memunculkan kotak "Use saved password?" atau "Save password?"; PIN tetap tampil sebagai titik-titik.
-- **2.1.4** (24 Nov 2026): Beranda dirapikan: Titipan terbaru, Analisa produk, Tren harian, Pola hari, Per produk, Per outlet, dan Catatan evaluasi menjadi bagian yang bisa dibuka/ditutup (tombol +/− di tiap judul, "Buka semua"/"Tutup semua"); pilihan tersimpan per perangkat dan awalnya semua tertutup. Titipan terbaru kini memuat semua titipan yang belum lunas (dikelompokkan per outlet, terbaru di atas, titipan yang dibayar sebagian menampilkan sisanya). Hitungan "titipan" di kartu tagihan memakai daftar yang sama.
-- **2.1.3** (24 Nov 2026): tombol Tagihan di Beranda hanya menyalin titipan yang belum lunas: titipan yang sudah lunas dan outlet yang seluruhnya lunas tidak ikut disalin; titipan yang dibayar sebagian ditandai "(sisa Rp ...)". Bila semua sudah lunas, tidak ada yang disalin dan muncul pemberitahuan.
-- **2.1.2** (24 Nov 2026): ikon 3D di tombol cepat semua halaman: Beranda, Bahan (Belanja, Pakai, Opname, Bahan baru), serta tombol aksi utama di Outlet, Bayar, Biaya, Laporan, dan Lainnya. Tombol hapus, ubah, dan masuk/keluar tetap berikon garis karena belum ada versi 3D-nya.
-- **2.1.1** (24 Nov 2026): Beranda: empat tombol aksi cepat (Titipan, Bayar, Belanja, Tagihan) kini berbentuk kartu horizontal 2×2 dengan ikon di kiri; sebelumnya tertumpuk ke bawah karena nama kelas `.qa` terpakai ganda. Tampilan hero dan kartu ringkasan dibuat lebih premium (aksen emas, gradasi lembut).
+- **2.2.0** (24 Nov 2026): menu Bahan menjadi Inventori; belanja bahan tidak lagi langsung menjadi biaya, beban dihitung saat dipakai (rata-rata bergerak); bagian Persediaan ditambahkan di Laba Rugi, PDF, dan Laporan.
 - **2.1.0** (24 Nov 2026): menu Bahan berbentuk tabel, alur stok disederhanakan.
 - **2.0.0** (24 Nov 2026): logo dan ikon KonsiKu baru.
 - **1.9.9** (24 Nov 2026): Export PDF dan Kirim ke WA di bawah laporan laba rugi; logo usaha di bagian atas laporan.
