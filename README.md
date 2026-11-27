@@ -138,8 +138,10 @@ Tampilan mengikuti **lebar layar** (viewport), bukan jenis perangkat:
 - **Per cara bayar**: tabel Tunai / Transfer / QRIS (jumlah transaksi, nominal, persentase).
 - **Riwayat pembayaran** dan **Tagihan yang sudah ditutup** juga berbentuk tabel (Salin dan Buka lagi di tiap baris). Hero menampilkan % terbayar.
 - Formulir pembayaran (pilih outlet, centang titipan yang dibayar) tidak diubah.
+- v2.3.1: angka tidak lagi mepet. Tabel Status tagihan dan Tagihan ditutup memakai susunan: nama outlet di baris atas, lalu Titipan / Dibayar / Sisa dalam tiga kolom lebar; riwayat dan per cara bayar diberi ruang kolom lebih lega. Diuji aman sampai angka ratusan juta di lebar layar 320-390 px.
 
 ## Versi
+- **2.3.1** (27 Nov 2026): angka tabel menu Bayar lebih lega dan tidak menempel.
 - **2.3.0** (27 Nov 2026): menu Bayar berbentuk tabel; formulir pembayaran tetap.
 - **2.2.1** (26 Nov 2026): tampilan laptop mengikuti lebar layar sehingga mode "Situs desktop" di HP juga memenuhi layar; HP biasa tetap mobile.
 - **2.2.0** (26 Nov 2026): tampilan laptop (sidebar, lebar penuh, modal); nominal laba bersih tidak terpotong.
